@@ -21,6 +21,12 @@ export default function RegistrarClientePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [entidades, setEntidades] = useState<any[]>([]);
+  const [showEntityModal, setShowEntityModal] = useState(false);
+  const [newEntityData, setNewEntityData] = useState({
+    nombre: '',
+    cupo_gasolina: '0',
+    cupo_gasoil: '0'
+  });
   const [formData, setFormData] = useState({
     nombre: '',
     cedula: '',
@@ -38,12 +44,25 @@ export default function RegistrarClientePage() {
     try {
       const res = await axios.get('/api/entidades');
       setEntidades(res.data);
-      // Seleccionar la primera por defecto si existe
-      if (res.data.length > 0) {
+      if (res.data.length > 0 && !formData.entidad_id) {
         setFormData(prev => ({ ...prev, entidad_id: res.data[0].id }));
       }
     } catch (error) {
       console.error('Error fetching entidades');
+    }
+  };
+
+  const handleCreateEntity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('/api/entidades', newEntityData);
+      toast.success('Entidad Madre creada');
+      await fetchEntidades(); // Recargar lista
+      setFormData(prev => ({ ...prev, entidad_id: res.data.id })); // Seleccionar la nueva
+      setShowEntityModal(false);
+      setNewEntityData({ nombre: '', cupo_gasolina: '0', cupo_gasoil: '0' });
+    } catch (error) {
+      toast.error('Error al crear entidad');
     }
   };
 
@@ -84,9 +103,20 @@ export default function RegistrarClientePage() {
       <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden p-12">
         <form onSubmit={handleSubmit} className="space-y-12">
           {/* Clasificación Jerárquica */}
-          <div className="space-y-3 p-8 bg-slate-900 rounded-[2.5rem] relative overflow-hidden">
+          <div className="space-y-4 p-8 bg-slate-900 rounded-[2.5rem] relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[80px] opacity-20 -mr-16 -mt-16" />
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic relative z-10">Entidad Madre / Clasificación</label>
+             <div className="flex items-center justify-between px-2 relative z-10">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Entidad Madre / Clasificación</label>
+                <button 
+                  type="button"
+                  onClick={() => setShowEntityModal(true)}
+                  className="flex items-center space-x-2 text-[10px] font-black text-red-600 hover:text-white transition-colors uppercase italic"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Configurar Nueva Entidad</span>
+                </button>
+             </div>
+             
              <div className="relative group z-10">
                 <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-red-600" />
                 <select 
@@ -95,12 +125,16 @@ export default function RegistrarClientePage() {
                   onChange={(e) => setFormData({...formData, entidad_id: e.target.value})}
                   className="w-full pl-16 pr-6 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-white font-black italic uppercase focus:ring-4 focus:ring-red-600/20 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="" disabled className="text-slate-900">Seleccionar Entidad Madre...</option>
-                  {entidades.map((entidad) => (
-                    <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
-                       {entidad.nombre}
-                    </option>
-                  ))}
+                  <option value="" disabled className="text-slate-900">Seleccionar Vínculo...</option>
+                  {entidades.length === 0 ? (
+                    <option value="" disabled className="text-slate-900 italic">No hay entidades creadas - Pulsa '+' para añadir</option>
+                  ) : (
+                    entidades.map((entidad) => (
+                      <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
+                         {entidad.nombre} (Dispo: {entidad.cupo_gasoil - entidad.consumo_gasoil}L Gasoil)
+                      </option>
+                    ))
+                  )}
                 </select>
              </div>
           </div>
@@ -199,6 +233,52 @@ export default function RegistrarClientePage() {
           </div>
         </form>
       </div>
+
+      {/* Modal Rápido para Nueva Entidad Madre */}
+      <AnimatePresence>
+        {showEntityModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowEntityModal(false)} />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white rounded-[3rem] w-full max-w-lg p-12 shadow-2xl border-4 border-red-600/10">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 underline decoration-red-600 decoration-4 underline-offset-8">Nueva Entidad Madre</h2>
+              <form onSubmit={handleCreateEntity} className="space-y-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Nombre de la Entidad</label>
+                  <input 
+                    type="text" required placeholder="Ej: Gobernación del Guairá"
+                    value={newEntityData.nombre}
+                    onChange={(e) => setNewEntityData({...newEntityData, nombre: e.target.value})}
+                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl text-slate-900 font-bold transition-all uppercase italic"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Litros Gasolina</label>
+                    <input 
+                      type="number" required
+                      value={newEntityData.cupo_gasolina}
+                      onChange={(e) => setNewEntityData({...newEntityData, cupo_gasolina: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xl font-black text-slate-900 text-center"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Litros Gasoil</label>
+                    <input 
+                      type="number" required
+                      value={newEntityData.cupo_gasoil}
+                      onChange={(e) => setNewEntityData({...newEntityData, cupo_gasoil: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xl font-black text-slate-900 text-center"
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-5 bg-slate-900 hover:bg-red-600 text-white rounded-[2rem] font-black shadow-xl transition-all uppercase italic">
+                  Guardar y Seleccionar
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
