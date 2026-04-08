@@ -23,14 +23,6 @@ const nextConfig = {
     return config;
   },
 
-  // Configuración de Turbopack
-  turbopack: {
-    // Configuración específica de Turbopack
-    resolveAlias: {
-      '@': require('path').resolve(__dirname, 'src'),
-    },
-  },
-
   // Configuración de imágenes
   images: {
     remotePatterns: [
