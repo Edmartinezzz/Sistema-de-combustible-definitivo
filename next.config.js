@@ -11,16 +11,20 @@ const nextConfig = {
     },
   },
 
-  // Configuración de Webpack
-  webpack: (config, { isServer }) => {
-    // Solo aplicar alias en modo Webpack
-    if (!process.env.TURBOPACK) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': require('path').resolve(__dirname, 'src'),
-      };
-    }
+  // Configuración de Webpack (Legacy)
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    };
     return config;
+  },
+
+  // Configuración de Turbopack (Next.js 16+)
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    },
   },
 
   // Configuración de imágenes
