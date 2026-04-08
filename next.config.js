@@ -41,32 +41,7 @@ const nextConfig = {
     ],
   },
 
-  async rewrites() {
-    let apiBase = process.env.BACKEND_API_BASE_URL;
-
-    console.log('Build-time BACKEND_API_BASE_URL:', apiBase);
-
-    if (!apiBase) {
-      console.warn('WARNING: BACKEND_API_BASE_URL is not defined. API rewrites will be disabled.');
-      return [];
-    }
-
-    // Sanitize: remove trailing slash and whitespace
-    apiBase = apiBase.trim().replace(/\/$/, '');
-
-    // Validate: must start with http
-    if (!apiBase.startsWith('http')) {
-      console.error('ERROR: BACKEND_API_BASE_URL must start with http:// or https://');
-      return [];
-    }
-
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiBase}/api/:path*`,
-      },
-    ];
-  },
+  // Las rutas de la API se manejan ahora vía vercel.json para unificación total
 
   // Configuración de salida
   // output: 'standalone', // Deshabilitado para que "next start" funcione en Render sin Start Command personalizado
