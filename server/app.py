@@ -4,6 +4,10 @@ import os
 from .db import close_db
 from .routes.auth import auth_bp
 from .routes.clientes import clientes_bp
+from .routes.retiros import retiros_bp
+from .routes.inventario import inventario_bp
+from .routes.agendamientos import agendamientos_bp
+from .routes.sistema import sistema_bp
 
 def create_app():
     app = Flask(__name__)
@@ -22,6 +26,10 @@ def create_app():
     # Registrar Blueprints
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(clientes_bp, url_prefix='/api')
+    app.register_blueprint(retiros_bp, url_prefix='/api')
+    app.register_blueprint(inventario_bp, url_prefix='/api')
+    app.register_blueprint(agendamientos_bp, url_prefix='/api')
+    app.register_blueprint(sistema_bp, url_prefix='/api')
 
     # Teardown de base de datos
     app.teardown_appcontext(close_db)
