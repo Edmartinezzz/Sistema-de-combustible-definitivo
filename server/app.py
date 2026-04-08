@@ -33,12 +33,21 @@ def create_app():
     # Teardown de base de datos
     app.teardown_appcontext(close_db)
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # Devolver el error real en JSON para facilitar el diagnóstico
+        return jsonify({
+            "error": "Error interno del servidor",
+            "details": str(e),
+            "type": e.__class__.__name__
+        }), 500
+
     @app.route('/', methods=['GET'])
     def home():
         return jsonify({
             'status': 'online',
             'message': 'API Modular de Despacho Gas+ funcionando correctamente',
-            'version': '3.0.0 (Modular)'
+            'version': '3.0.1 (Diagnostic Mode)'
         })
 
     return app
