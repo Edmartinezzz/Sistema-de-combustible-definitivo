@@ -86,7 +86,7 @@ export default function RegistrarClientePage() {
           {/* Clasificación Jerárquica */}
           <div className="space-y-3 p-8 bg-slate-900 rounded-[2.5rem] relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[80px] opacity-20 -mr-16 -mt-16" />
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic relative z-10">Sub-categoría / Secretaría de Origen</label>
+             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic relative z-10">Entidad Madre / Clasificación</label>
              <div className="relative group z-10">
                 <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-red-600" />
                 <select 
@@ -95,7 +95,7 @@ export default function RegistrarClientePage() {
                   onChange={(e) => setFormData({...formData, entidad_id: e.target.value})}
                   className="w-full pl-16 pr-6 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-white font-black italic uppercase focus:ring-4 focus:ring-red-600/20 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="" disabled className="text-slate-900">Seleccionar Secretaría...</option>
+                  <option value="" disabled className="text-slate-900">Seleccionar Entidad Madre...</option>
                   {entidades.map((entidad) => (
                     <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
                        {entidad.nombre}

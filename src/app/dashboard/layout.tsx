@@ -19,7 +19,7 @@ import { toast } from 'react-hot-toast';
 const navItems = [
   { id: 'dashboard', label: 'Resumen', icon: LayoutDashboard, href: '/dashboard' },
   { id: 'combustible', label: 'Gestión de Reserva', icon: Fuel, href: '/dashboard/combustible' },
-  { id: 'entidades', label: 'Secretarías/Entidades', icon: Building2, href: '/dashboard/entidades' },
+  { id: 'entidades', label: 'Entidades Madre', icon: Building2, href: '/dashboard/entidades' },
   { id: 'clientes', label: 'Clientes', icon: Users, href: '/clientes' },
   { id: 'despacho', label: 'Registrar Despacho', icon: Zap, href: '/dashboard/despacho' },
   { id: 'nuevo-cliente', label: 'Nuevo Cliente', icon: Plus, href: '/dashboard/registrar-cliente' },

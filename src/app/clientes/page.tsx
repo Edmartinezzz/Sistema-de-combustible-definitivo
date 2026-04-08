@@ -73,7 +73,7 @@ export default function ClientesPage() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-50">
                 <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Información Principal</th>
-                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Secretaría / Vínculo</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Vínculo / Entidad Madre</th>
                 <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-center">Consumo Cupo</th>
                 <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-right">Acciones</th>
               </tr>

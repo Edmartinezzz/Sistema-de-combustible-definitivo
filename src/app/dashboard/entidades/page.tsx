@@ -59,7 +59,7 @@ export default function EntidadesPage() {
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Direcciones y Secretarías</h1>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Direcciones y Entidades</h1>
           <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic tracking-widest">Gestión de Cupos Jerárquicos Insula Guaira</p>
         </div>
         <button 
@@ -67,7 +67,7 @@ export default function EntidadesPage() {
           className="flex items-center justify-center space-x-3 px-8 py-4 bg-red-600 text-white rounded-[2rem] font-black shadow-xl shadow-red-600/20 hover:bg-black transition-all active:scale-95 uppercase text-[10px] tracking-widest italic"
         >
           <Plus className="w-5 h-5" />
-          <span>Nueva Secretaría</span>
+          <span>Nueva Entidad Madre</span>
         </button>
       </div>
 
@@ -83,12 +83,12 @@ export default function EntidadesPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-white rounded-[3rem] w-full max-w-lg p-10 shadow-2xl">
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8">Registrar Secretaría</h2>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8">Registrar Entidad Madre</h2>
               <form onSubmit={handleCreate} className="space-y-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Nombre de la Entidad</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Nombre de la Entidad (Madre)</label>
                   <input 
-                    type="text" required placeholder="Ej: Secretaría de Salud"
+                    type="text" required placeholder="Ej: Gobernación, Secretaría, etc."
                     value={formData.nombre}
                     onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                     className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all italic uppercase"
