@@ -23,7 +23,7 @@ export async function GET() {
   }
 }
 
-// Actualizar cantidad en los tanques
+// Actualizar o Crear cantidad en los tanques
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
@@ -33,19 +33,23 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Tipo de combustible inválido' }, { status: 400 });
     }
 
+    // Usamos upsert para que cree el registro si no existe
     const { data, error } = await supabaseAdmin
       .from('inventario')
-      .update({
+      .upsert({
+        tipo_combustible: tipo,
         cantidad_actual: parseFloat(cantidad_actual),
         capacidad_total: parseFloat(capacidad_total)
-      })
-      .eq('tipo_combustible', tipo)
+      }, { onConflict: 'tipo_combustible' })
       .select()
       .single();
 
     if (error) throw error;
     return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ error: 'Error al actualizar inventario' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Error al actualizar inventario', 
+      details: error.message 
+    }, { status: 500 });
   }
 }
