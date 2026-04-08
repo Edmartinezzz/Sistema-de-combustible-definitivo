@@ -47,108 +47,95 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestión de Clientes</h1>
-          <p className="text-slate-500 font-medium">Administra y monitorea el consumo de tus beneficiarios.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Base de Clientes</h1>
+          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest">Gestión de beneficiarios Insula Guaira</p>
         </div>
-        <button className="flex items-center justify-center space-x-2 px-6 py-3.5 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95">
+        <button 
+          onClick={() => window.location.href='/dashboard/registrar-cliente'}
+          className="flex items-center justify-center space-x-2 px-8 py-4 bg-red-600 text-white rounded-[2rem] font-black shadow-xl shadow-red-600/20 hover:bg-black transition-all active:scale-95 uppercase text-xs tracking-tighter"
+        >
           <Plus className="w-5 h-5" />
-          <span>Registrar Nuevo Cliente</span>
+          <span>Registrar Beneficiario</span>
         </button>
       </div>
 
-      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-red-600 transition-colors" />
           <input 
             type="text" 
-            placeholder="Buscar por nombre, cédula o teléfono..."
+            placeholder="Buscar por nombre o cédula..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-sm"
+            className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] text-sm font-bold focus:ring-4 focus:ring-red-600/5 focus:border-red-600 transition-all shadow-sm"
           />
         </div>
-        <button className="flex items-center space-x-2 px-6 py-4 bg-white border border-slate-200 rounded-2xl text-slate-600 font-bold hover:bg-slate-50 transition-all shadow-sm">
-          <Filter className="w-5 h-5" />
-          <span>Filtros</span>
-        </button>
       </div>
 
-      {/* Main Table Card */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mb-12">
+      <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden mb-12">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest">Información del Cliente</th>
-                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Estado de Cupo</th>
-                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest">Contacto</th>
-                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Acciones</th>
+              <tr className="bg-slate-50/50 border-b border-slate-50">
+                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Información Principal</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-center">Consumo Mensual</th>
+                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Contacto</th>
+                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               <AnimatePresence mode="popLayout">
-                {filteredClientes.map((cliente, idx) => (
+                {filteredClientes.map((cliente) => (
                   <motion.tr 
                     key={cliente.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    className="group hover:bg-red-50/30 transition-colors"
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-lg group-hover:scale-110 transition-transform">
+                    <td className="px-10 py-8">
+                      <div className="flex items-center space-x-5">
+                        <div className="w-14 h-14 bg-slate-900 rounded-3xl flex items-center justify-center text-white font-black text-xl group-hover:scale-110 group-hover:bg-red-600 transition-all italic">
                           {cliente.nombre[0]}
                         </div>
                         <div>
-                          <p className="text-base font-bold text-slate-900 leading-none mb-1">{cliente.nombre}</p>
-                          <p className="text-xs font-semibold text-slate-400">ID: {cliente.cedula}</p>
+                          <p className="text-base font-black text-slate-900 leading-none mb-1 uppercase italic tracking-tighter">{cliente.nombre}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">C.I: {cliente.cedula}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-6">
+                    <td className="px-6 py-8">
                       <div className="flex flex-col items-center">
-                        <div className="flex justify-between w-40 text-[10px] font-bold text-slate-400 mb-1.5 px-1">
-                          <span>{cliente.cupo_consumido} GL usados</span>
-                          <span>{cliente.cupo_mensual} GL</span>
+                        <div className="flex justify-between w-44 text-[9px] font-black text-slate-400 mb-2 px-1 uppercase italic">
+                          <span className={cliente.cupo_consumido > 0 ? 'text-red-600' : ''}>{cliente.cupo_consumido} GL</span>
+                          <span>/ {cliente.cupo_mensual} GL</span>
                         </div>
-                        <div className="w-40 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-44 h-3 bg-slate-100 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${(cliente.cupo_consumido / cliente.cupo_mensual) * 100}%` }}
-                            className={`h-full rounded-full ${
-                              (cliente.cupo_consumido / cliente.cupo_mensual) > 0.8 ? 'bg-amber-500' : 'bg-blue-600'
-                            }`}
+                            className="h-full bg-red-600 rounded-full"
                           />
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-6">
+                    <td className="px-6 py-8">
                       <div className="flex flex-col space-y-1">
-                        <div className="flex items-center text-sm font-semibold text-slate-600">
-                          <Phone className="w-3.5 h-3.5 mr-2 text-slate-400" />
+                        <div className="flex items-center text-sm font-bold text-slate-700 uppercase italic tracking-tight">
+                          <Phone className="w-4 h-4 mr-2 text-red-600" />
                           {cliente.telefono}
-                        </div>
-                        <div className="flex items-center text-xs font-medium text-slate-400">
-                          <CreditCard className="w-3.5 h-3.5 mr-2 text-slate-300" />
-                          Cupo Mensual: {cliente.cupo_mensual} GL
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
-                          <Edit2 className="w-4 h-4" />
+                    <td className="px-10 py-8 text-right">
+                      <div className="flex items-center justify-end space-x-3">
+                        <button className="p-3 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all">
+                          <Edit2 className="w-5 h-5" />
                         </button>
-                        <button className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-200 transition-all">
-                          <MoreVertical className="w-4 h-4" />
+                        <button className="p-3 text-slate-300 hover:text-red-600 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100">
+                          <MoreVertical className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
@@ -158,25 +145,6 @@ export default function ClientesPage() {
             </tbody>
           </table>
         </div>
-        
-        {/* Empty State */}
-        {filteredClientes.length === 0 && !loading && (
-          <div className="py-20 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-50 rounded-full mb-4">
-              <Users className="w-10 h-10 text-slate-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">No hay clientes que coincidan</h3>
-            <p className="text-slate-400 mt-2">Intenta buscar con otros términos o registra uno nuevo.</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="py-20 text-center">
-            <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-slate-500 mt-4 font-bold">Cargando beneficiarios...</p>
-          </div>
-        )}
       </div>
     </div>
   );

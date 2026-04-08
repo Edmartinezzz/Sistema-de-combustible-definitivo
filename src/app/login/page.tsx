@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, User, Fuel, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [usuario, setUsuario] = useState('');
@@ -30,7 +31,6 @@ export default function LoginPage() {
 
       toast.success(`¡Bienvenido, ${userData.nombre}!`);
       
-      // Animación antes de redirigir
       setTimeout(() => {
         router.push('/dashboard');
       }, 500);
@@ -42,11 +42,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
-      {/* Fondo decorativo sutil */}
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      {/* Fondo decorativo sutil en Rojo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[120px] opacity-50" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100 rounded-full blur-[120px] opacity-50" />
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-red-50 rounded-full blur-[120px] opacity-60" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-slate-50 rounded-full blur-[120px] opacity-60" />
       </div>
 
       <motion.div 
@@ -55,52 +55,54 @@ export default function LoginPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-[420px] relative z-10"
       >
-        {/* Header Logo */}
+        {/* Header Logo Insula Guaira */}
         <div className="text-center mb-10">
           <motion.div 
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-xl shadow-blue-500/10 mb-6 border border-white"
+            className="inline-flex items-center justify-center w-full mb-6"
           >
-            <Fuel className="w-10 h-10 text-blue-600" />
+            {/* Aquí va tu logo. Asegúrate de colocarlo en public/logo.png */}
+            <div className="relative w-64 h-24">
+               <div className="text-4xl font-black tracking-tighter text-slate-900 italic">
+                  INSULA<span className="text-red-600">GUAIRA</span>
+               </div>
+               <p className="text-[10px] font-bold tracking-[0.3em] text-slate-400 mt-2 uppercase">Despacho de Combustible</p>
+            </div>
           </motion.div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Despacho Gas+</h1>
-          <p className="text-slate-500 font-medium tracking-wide">PANEL DE ADMINISTRACIÓN</p>
         </div>
 
         {/* Card de Login */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-2xl shadow-slate-200/50">
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-2xl shadow-slate-200/50">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2 px-1">Usuario</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2 px-1">Usuario</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                  <User className="h-5 w-5 text-slate-400 group-focus-within:text-red-500 transition-colors" />
                 </div>
                 <input
                   type="text"
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-blue-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
-                  placeholder="Introduce tu usuario"
-                  autoComplete="username"
+                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-red-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
+                  placeholder="Usuario administrador"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2 px-1">Contraseña</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2 px-1">Contraseña</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                  <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-red-500 transition-colors" />
                 </div>
                 <input
                   type="password"
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-blue-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
+                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-red-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
                   placeholder="••••••••"
-                  autoComplete="current-password"
                 />
               </div>
             </div>
@@ -108,27 +110,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex items-center justify-center py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98] overflow-hidden"
+              className="group relative w-full flex items-center justify-center py-4 px-4 bg-red-600 hover:bg-black text-white text-lg font-bold rounded-2xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98] overflow-hidden"
             >
               <AnimatePresence mode="wait">
                 {loading ? (
-                  <motion.div
-                    key="loader"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  </motion.div>
+                  <motion.div key="loader"><Loader2 className="w-6 h-6 animate-spin" /></motion.div>
                 ) : (
-                  <motion.div
-                    key="content"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center"
-                  >
-                    Acceder al sistema
+                  <motion.div key="content" className="flex items-center">
+                    Iniciar Sesión
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </motion.div>
                 )}
@@ -136,9 +125,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center pt-6 border-t border-slate-100">
-            <p className="text-slate-400 text-sm font-medium">
-              © 2026 Sistema Combustible Definitivo
+          <div className="mt-8 text-center pt-6 border-t border-slate-50">
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+              © 2026 Insula Guaira C.A.
             </p>
           </div>
         </div>

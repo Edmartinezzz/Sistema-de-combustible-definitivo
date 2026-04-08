@@ -11,7 +11,6 @@ import {
   Fuel, 
   Save, 
   ArrowLeft,
-  CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 import axios from 'axios';
@@ -32,115 +31,101 @@ export default function RegistrarClientePage() {
     setLoading(true);
     try {
       await axios.post('/api/clientes', formData);
-      toast.success('Cliente registrado exitosamente');
+      toast.success('Beneficiario registrado con éxito');
       router.push('/clientes');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Error al registrar cliente');
+      toast.error(error.response?.data?.error || 'Error al registrar');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex items-center space-x-4">
+    <div className="max-w-3xl mx-auto space-y-10">
+      <div className="flex items-center space-x-6">
         <button 
           onClick={() => router.back()}
-          className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 transition-all shadow-sm"
+          className="p-4 bg-white border border-slate-100 rounded-[2rem] text-slate-400 hover:text-red-600 transition-all shadow-sm"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Nuevo Beneficiario</h1>
-          <p className="text-slate-500 font-medium">Registra un nuevo cliente en el sistema de subsidio.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Alta de Beneficiario</h1>
+          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic">Base de Datos Insula Guaira</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-10">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Nombre */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 ml-1">Nombre Completo</label>
+      <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden p-12">
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Nombre y Apellido</label>
               <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
-                  type="text" 
-                  required
-                  placeholder="Ej: Juan Pérez"
+                  type="text" required placeholder="Juán Pérez"
                   value={formData.nombre}
                   onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-medium focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase italic"
                 />
               </div>
             </div>
 
-            {/* Cédula */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 ml-1">Documento / Cédula</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Cédula de Identidad</label>
               <div className="relative group">
-                <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
-                  type="text" 
-                  required
-                  placeholder="27.123.456"
+                  type="text" required placeholder="V-27.123.456"
                   value={formData.cedula}
                   onChange={(e) => setFormData({...formData, cedula: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-medium focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase"
                 />
               </div>
             </div>
 
-            {/* Teléfono */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 ml-1">Teléfono Móvil</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Teléfono de Contacto</label>
               <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
-                  type="tel" 
-                  required
-                  placeholder="0412 123 4567"
+                  type="tel" required placeholder="0412 000 0000"
                   value={formData.telefono}
                   onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-medium focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
                 />
               </div>
             </div>
 
-            {/* Cupo Mensual */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 ml-1">Cupo Mensual (Galones)</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Cupo Mensual (Galones)</label>
               <div className="relative group">
-                <Fuel className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <Fuel className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
-                  type="number" 
-                  required
-                  placeholder="50"
+                  type="number" required placeholder="50"
                   value={formData.cupo_mensual}
                   onChange={(e) => setFormData({...formData, cupo_mensual: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-medium focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
-            <div className="flex items-center text-slate-400 text-xs font-bold uppercase tracking-wider">
-              <AlertCircle className="w-4 h-4 mr-2" />
-              Todos los campos son obligatorios
+          <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
+            <div className="flex items-center text-slate-400 text-[9px] font-black uppercase tracking-widest italic">
+              <AlertCircle className="w-4 h-4 mr-2 text-red-600" />
+              Suscripción sujeta a validación central
             </div>
             <button 
-              type="submit"
-              disabled={loading}
-              className="flex items-center space-x-2 px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
+              type="submit" disabled={loading}
+              className="px-12 py-5 bg-red-600 text-white rounded-[2rem] font-black shadow-2xl shadow-red-600/40 hover:bg-black transition-all active:scale-95 disabled:opacity-50 uppercase tracking-tighter flex items-center"
             >
               {loading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
-                  <span>Guardar Cliente</span>
+                  <Save className="w-5 h-5 mr-3" />
+                  <span>Guardar Beneficiario</span>
                 </>
               )}
             </button>
