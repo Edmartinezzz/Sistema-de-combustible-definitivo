@@ -13,7 +13,11 @@ import {
   AlertCircle,
   Zap,
   Building2,
-  Plus
+  Plus,
+  Car,
+  Key,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -23,15 +27,21 @@ export default function RegistrarClientePage() {
   const [loading, setLoading] = useState(false);
   const [entidades, setEntidades] = useState<any[]>([]);
   const [showEntityModal, setShowEntityModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
   const [newEntityData, setNewEntityData] = useState({
     nombre: '',
     cupo_gasolina: '0',
     cupo_gasoil: '0'
   });
+
   const [formData, setFormData] = useState({
     nombre: '',
     cedula: '',
     telefono: '',
+    vehiculo: '',
+    placa: '',
+    password: '',
     cupo_gasolina: '0',
     cupo_gasoil: '0',
     entidad_id: ''
@@ -58,8 +68,8 @@ export default function RegistrarClientePage() {
     try {
       const res = await axios.post('/api/entidades', newEntityData);
       toast.success('Entidad Madre creada');
-      await fetchEntidades(); // Recargar lista
-      setFormData(prev => ({ ...prev, entidad_id: res.data.id })); // Seleccionar la nueva
+      await fetchEntidades();
+      setFormData(prev => ({ ...prev, entidad_id: res.data.id }));
       setShowEntityModal(false);
       setNewEntityData({ nombre: '', cupo_gasolina: '0', cupo_gasoil: '0' });
     } catch (error) {
@@ -70,7 +80,7 @@ export default function RegistrarClientePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.entidad_id) {
-      toast.error('Debes seleccionar una Entidad/Secretaría');
+      toast.error('Debes seleccionar una Entidad Madre');
       return;
     }
 
@@ -96,25 +106,26 @@ export default function RegistrarClientePage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Alta Bi-Combustible</h1>
-          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic">Vínculo de Entidad Insula Guaira</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Alta de Beneficiario</h1>
+          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic tracking-widest">Ficha de Seguridad Insula Guaira</p>
         </div>
       </div>
 
       <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden p-12">
-        <form onSubmit={handleSubmit} className="space-y-12">
+        <form onSubmit={handleSubmit} className="space-y-10">
+          
           {/* Clasificación Jerárquica */}
           <div className="space-y-4 p-8 bg-slate-900 rounded-[2.5rem] relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[80px] opacity-20 -mr-16 -mt-16" />
              <div className="flex items-center justify-between px-2 relative z-10">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Entidad Madre / Clasificación</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Vínculo de Entidad Madre</label>
                 <button 
                   type="button"
                   onClick={() => setShowEntityModal(true)}
                   className="flex items-center space-x-2 text-[10px] font-black text-red-600 hover:text-white transition-colors uppercase italic"
                 >
                   <Plus className="w-3 h-3" />
-                  <span>Configurar Nueva Entidad</span>
+                  <span>Añadir Nueva Entidad</span>
                 </button>
              </div>
              
@@ -124,99 +135,151 @@ export default function RegistrarClientePage() {
                   required
                   value={formData.entidad_id}
                   onChange={(e) => setFormData({...formData, entidad_id: e.target.value})}
-                  className="w-full pl-16 pr-6 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-white font-black italic uppercase focus:ring-4 focus:ring-red-600/20 transition-all appearance-none cursor-pointer"
+                  className="w-full pl-16 pr-6 py-5 bg-white/5 border border-white/10 rounded-[2rem] text-white font-black italic uppercase focus:ring-4 focus:ring-red-600/20 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="" disabled className="text-slate-900">Seleccionar Vínculo...</option>
-                  {entidades.length === 0 ? (
-                    <option value="" disabled className="text-slate-900 italic">No hay entidades creadas - Pulsa '+' para añadir</option>
-                  ) : (
-                    entidades.map((entidad) => (
-                      <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
-                         {entidad.nombre} (Dispo: {entidad.cupo_gasoil - entidad.consumo_gasoil}L Gasoil)
-                      </option>
-                    ))
-                  )}
+                  <option value="" disabled className="text-slate-900">Seleccionar...</option>
+                  {entidades.map((entidad) => (
+                    <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
+                       {entidad.nombre}
+                    </option>
+                  ))}
                 </select>
              </div>
           </div>
 
-          {/* Datos Personales */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Beneficiario</label>
-              <div className="relative group">
-                <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
-                <input 
-                  type="text" required placeholder="Nombre Completo"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase italic"
-                />
+          {/* Datos Personales y Seguridad */}
+          <div className="space-y-8">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] italic border-b border-slate-50 pb-4">1. Identidad y Acceso</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Nombre Completo</label>
+                <div className="relative group">
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type="text" required placeholder="Nombre del chofer"
+                    value={formData.nombre}
+                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase italic"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Cédula (Usuario)</label>
+                <div className="relative group">
+                  <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type="text" required placeholder="Documento ID"
+                    value={formData.cedula}
+                    onChange={(e) => setFormData({...formData, cedula: e.target.value})}
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Teléfono de Contacto</label>
+                <div className="relative group">
+                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type="tel" required placeholder="Nº de Celular"
+                    value={formData.telefono}
+                    onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Contraseña de Acceso</label>
+                <div className="relative group">
+                  <Key className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type={showPassword ? "text" : "password"} required placeholder="Mínimo 6 caracteres"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className="w-full pl-14 pr-14 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Documento</label>
-              <div className="relative group">
-                <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
-                <input 
-                  type="text" required placeholder="Cédula"
-                  value={formData.cedula}
-                  onChange={(e) => setFormData({...formData, cedula: e.target.value})}
-                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
-                />
+          </div>
+
+          {/* Datos del Vehículo */}
+          <div className="space-y-8">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] italic border-b border-slate-50 pb-4">2. Información Vehicular</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Descripción del Vehículo</label>
+                <div className="relative group">
+                  <Car className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type="text" required placeholder="Ej: Toyota Hilux Blanca"
+                    value={formData.vehiculo}
+                    onChange={(e) => setFormData({...formData, vehiculo: e.target.value})}
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase italic"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Teléfono</label>
-              <div className="relative group">
-                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
-                <input 
-                  type="tel" required placeholder="Contacto"
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all"
-                />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Chapa / Placa</label>
+                <div className="relative group">
+                  <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
+                  <input 
+                    type="text" required placeholder="Nº de Matrícula"
+                    value={formData.placa}
+                    onChange={(e) => setFormData({...formData, placa: e.target.value})}
+                    className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-[2rem] text-slate-900 font-bold focus:ring-4 focus:ring-red-600/5 transition-all uppercase"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Asignación de Cupos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-4 p-8 bg-red-50/30 rounded-[2.5rem] border border-red-100">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-red-600 text-white rounded-2xl shadow-lg ring-4 ring-white">
-                  <Fuel className="w-5 h-5" />
+          <div className="space-y-8">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] italic border-b border-slate-50 pb-4">3. Cuotas de Combustible</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-4 p-8 bg-red-50/30 rounded-[2.5rem] border border-red-100">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="p-3 bg-red-600 text-white rounded-2xl shadow-lg ring-4 ring-white">
+                    <Fuel className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-red-600 uppercase italic tracking-tighter">Cupo Gasolina (GL)</h3>
                 </div>
-                <h3 className="text-lg font-black text-red-600 uppercase italic tracking-tighter">Cupo Gasolina (GL)</h3>
+                <input 
+                  type="number" step="0.1" required
+                  value={formData.cupo_gasolina}
+                  onChange={(e) => setFormData({...formData, cupo_gasolina: e.target.value})}
+                  className="w-full px-8 py-5 bg-white border-2 border-red-200 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all text-center tracking-tighter italic"
+                />
               </div>
-              <input 
-                type="number" step="0.1" required
-                value={formData.cupo_gasolina}
-                onChange={(e) => setFormData({...formData, cupo_gasolina: e.target.value})}
-                className="w-full px-8 py-5 bg-white border-2 border-red-200 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all text-center tracking-tighter italic"
-              />
-            </div>
 
-            <div className="space-y-4 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg ring-4 ring-white">
-                  <Zap className="w-5 h-5" />
+              <div className="space-y-4 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg ring-4 ring-white">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 uppercase italic tracking-tighter">Cupo Gasoil (GL)</h3>
                 </div>
-                <h3 className="text-lg font-black text-slate-900 uppercase italic tracking-tighter">Cupo Gasoil (GL)</h3>
+                <input 
+                  type="number" step="0.1" required
+                  value={formData.cupo_gasoil}
+                  onChange={(e) => setFormData({...formData, cupo_gasoil: e.target.value})}
+                  className="w-full px-8 py-5 bg-white border-2 border-slate-300 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 transition-all text-center tracking-tighter italic"
+                />
               </div>
-              <input 
-                type="number" step="0.1" required
-                value={formData.cupo_gasoil}
-                onChange={(e) => setFormData({...formData, cupo_gasoil: e.target.value})}
-                className="w-full px-8 py-5 bg-white border-2 border-slate-300 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 transition-all text-center tracking-tighter italic"
-              />
             </div>
           </div>
 
           <div className="pt-10 flex items-center justify-between border-t border-slate-50">
             <div className="flex items-center text-slate-400 text-[9px] font-black uppercase tracking-widest italic">
               <AlertCircle className="w-4 h-4 mr-2 text-red-600" />
-              Consumo compartido con el presupuesto de la Secretaría
+              Consumo auditado por vehículo registrado
             </div>
             <button 
               type="submit" disabled={loading}
