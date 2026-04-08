@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
+// Obtener el estado de ambos tanques (Gasolina y Gasoil)
 export async function GET() {
   try {
     const { data: inventario, error } = await supabaseAdmin
       .from('inventario')
-      .select('*')
-      .eq('tipo_combustible', 'Gas GLP')
-      .single();
+      .select('*');
 
     if (error) throw error;
 
-    return NextResponse.json(inventario);
+    // Retornamos un objeto con ambos tipos para facilidad del frontend
+    const gasolina = inventario.find(i => i.tipo_combustible === 'Gasolina');
+    const gasoil = inventario.find(i => i.tipo_combustible === 'Gasoil');
+
+    return NextResponse.json({ gasolina, gasoil });
   } catch (error: any) {
     return NextResponse.json(
       { error: 'Error al obtener inventario', details: error.message },
@@ -20,10 +23,15 @@ export async function GET() {
   }
 }
 
+// Actualizar cantidad en los tanques
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { cantidad_actual, capacidad_total } = body;
+    const { tipo, cantidad_actual, capacidad_total } = body;
+
+    if (!['Gasolina', 'Gasoil'].includes(tipo)) {
+      return NextResponse.json({ error: 'Tipo de combustible inválido' }, { status: 400 });
+    }
 
     const { data, error } = await supabaseAdmin
       .from('inventario')
@@ -31,7 +39,7 @@ export async function PUT(request: Request) {
         cantidad_actual: parseFloat(cantidad_actual),
         capacidad_total: parseFloat(capacidad_total)
       })
-      .eq('tipo_combustible', 'Gas GLP')
+      .eq('tipo_combustible', tipo)
       .select()
       .single();
 
