@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from('clientes')
-      .select('*')
+      .select('*, entidades(*)')
       .order('nombre', { ascending: true });
 
     if (error) throw error;
