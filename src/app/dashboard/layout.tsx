@@ -7,7 +7,7 @@ import {
   LayoutDashboard, 
   Users, 
   Fuel, 
-  History, 
+  History as HistoryIcon, 
   LogOut, 
   Menu, 
   Zap,
@@ -22,7 +22,7 @@ const navItems = [
   { id: 'clientes', label: 'Clientes', icon: Users, href: '/clientes' },
   { id: 'despacho', label: 'Registrar Despacho', icon: Zap, href: '/dashboard/despacho' },
   { id: 'nuevo-cliente', label: 'Nuevo Cliente', icon: Plus, href: '/dashboard/registrar-cliente' },
-  { id: 'historial', label: 'Historial', icon: History, href: '/historial' },
+  { id: 'historial', label: 'Historial', icon: HistoryIcon, href: '/historial' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
