@@ -11,7 +11,8 @@ import {
   Package, 
   Calendar,
   ChevronRight,
-  MoreVertical
+  MoreVertical,
+  History as HistoryIcon
 } from 'lucide-react';
 import axios from 'axios';
 import {
@@ -183,7 +184,7 @@ export default function DashboardHome() {
               <div key={idx} className="flex items-center justify-between p-1 group cursor-pointer hover:bg-slate-50 rounded-2xl transition-colors">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500 group-hover:bg-white transition-colors">
-                    <History className="w-6 h-6" />
+                    <HistoryIcon className="w-6 h-6" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900">{d.clientes?.nombre || 'Cliente'}</h4>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  History, 
+  History as HistoryIcon, 
   Search, 
   Download, 
   ChevronRight, 
@@ -134,7 +134,7 @@ export default function HistorialPage() {
 
           {filteredRetiros.length === 0 && !loading && (
             <div className="py-20 text-center">
-              <History className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+              <HistoryIcon className="w-16 h-16 text-slate-200 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-slate-400">No hay registros aún</h3>
             </div>
           )}

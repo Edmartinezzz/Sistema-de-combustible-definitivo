@@ -16,7 +16,8 @@ import {
   Search,
   ChevronRight,
   TrendingDown,
-  UserCircle
+  UserCircle,
+  Plus
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
