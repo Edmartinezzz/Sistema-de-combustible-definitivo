@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'gas-despacho-2026-premium-secret';
 
@@ -16,53 +17,79 @@ export async function POST(request: Request) {
       );
     }
 
-    // Consultar usuario en Supabase directamente
-    const { data: user, error } = await supabaseAdmin
+    // --- 1. INTENTAR COMO ADMINISTRADOR ---
+    const { data: admin } = await supabaseAdmin
       .from('usuarios')
       .select('*')
       .eq('usuario', usuario)
       .single();
 
-    if (error || !user) {
-      return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 401 }
-      );
-    }
-
-    // Validación de contraseña (Texto plano según el sistema actual)
-    if (user.contrasena !== contrasena) {
-      return NextResponse.json(
-        { error: 'Contraseña incorrecta' },
-        { status: 401 }
-      );
-    }
-
-    // Generar Token JWT
-    const token = jwt.sign(
-      {
-        id: user.id,
-        usuario: user.usuario,
-        es_admin: user.es_admin,
-      },
-      SECRET_KEY,
-      { expiresIn: '8h' }
-    );
-
-    return NextResponse.json({
-      token,
-      usuario: {
-        id: user.id,
-        usuario: user.usuario,
-        nombre: user.nombre,
-        es_admin: user.es_admin
+    if (admin) {
+      // Validación admin (soporta tanto bcrypt como texto plano por compatibilidad temporal)
+      let passMatch = admin.contrasena === contrasena;
+      
+      // Si no coincide en plano, intentar con bcrypt (por si ya migramos los admins)
+      if (!passMatch && admin.contrasena.startsWith('$2')) {
+        passMatch = await bcrypt.compare(contrasena, admin.contrasena);
       }
-    });
+
+      if (passMatch) {
+        const token = jwt.sign(
+          { id: admin.id, role: 'admin', nombre: admin.nombre },
+          SECRET_KEY,
+          { expiresIn: '8h' }
+        );
+
+        return NextResponse.json({
+          token,
+          usuario: {
+            id: admin.id,
+            nombre: admin.nombre,
+            rol: 'admin'
+          }
+        });
+      }
+    }
+
+    // --- 2. INTENTAR COMO BENEFICIARIO (Cédula) ---
+    const { data: cliente } = await supabaseAdmin
+      .from('clientes')
+      .select('*, entidades(*)')
+      .eq('cedula', usuario)
+      .single();
+
+    if (cliente && cliente.password) {
+      const passMatch = await bcrypt.compare(contrasena, cliente.password);
+      
+      if (passMatch) {
+         const token = jwt.sign(
+           { id: cliente.id, role: 'cliente', nombre: cliente.nombre },
+           SECRET_KEY,
+           { expiresIn: '8h' }
+         );
+
+         return NextResponse.json({
+           token,
+           usuario: {
+             id: cliente.id,
+             nombre: cliente.nombre,
+             rol: 'cliente',
+             entidad: cliente.entidades?.nombre || 'Particular'
+           }
+         });
+      }
+    }
+
+    // --- 3. SI NADA COINCIDE ---
+    return NextResponse.json(
+      { error: 'Credenciales inválidas' },
+      { status: 401 }
+    );
 
   } catch (error: any) {
     console.error('Error en Login API:', error);
     return NextResponse.json(
-      { error: 'Error interno del servidor', details: error.message },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }

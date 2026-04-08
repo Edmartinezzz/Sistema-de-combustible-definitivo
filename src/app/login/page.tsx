@@ -32,7 +32,11 @@ export default function LoginPage() {
       toast.success(`¡Bienvenido, ${userData.nombre}!`);
       
       setTimeout(() => {
-        router.push('/dashboard');
+        if (userData.rol === 'admin') {
+          router.push('/dashboard');
+        } else {
+          router.push('/portal-beneficiario');
+        }
       }, 500);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Error al iniciar sesión');
