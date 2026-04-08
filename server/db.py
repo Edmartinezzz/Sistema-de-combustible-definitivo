@@ -10,17 +10,11 @@ def get_db():
         if not database_url:
             raise Exception("DATABASE_URL no está configurada")
         
-        # Parse the URL
-        result = urllib.parse.urlparse(database_url)
         g.db = psycopg2.connect(
-            database=result.path[1:],
-            user=result.username,
-            password=result.password,
-            host=result.hostname,
-            port=result.port,
+            database_url,
             cursor_factory=psycopg2.extras.RealDictCursor
         )
-        g.db.set_session(autocommit=False)
+        g.db.set_session(autocommit=True)
     return g.db
 
 def close_db(error=None):

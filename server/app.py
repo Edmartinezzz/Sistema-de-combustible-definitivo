@@ -13,11 +13,10 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu_clave_secreta_muy_segura')
 
-    # Configuración CORS
-    ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001').split(',')
+    # Configuración CORS (Acepta Vercel y Localhost)
     CORS(app, resources={
         r"/api/*": {
-            "origins": ALLOWED_ORIGINS,
+            "origins": ["*", "http://localhost:3000", "http://localhost:3001"],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
