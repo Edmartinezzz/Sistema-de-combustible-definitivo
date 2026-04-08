@@ -1,0 +1,37 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
+import os
+from .db import close_db
+from .routes.auth import auth_bp
+from .routes.clientes import clientes_bp
+
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu_clave_secreta_muy_segura')
+
+    # Configuración CORS
+    ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001').split(',')
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ALLOWED_ORIGINS,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    }, supports_credentials=True)
+
+    # Registrar Blueprints
+    app.register_blueprint(auth_bp, url_prefix='/api')
+    app.register_blueprint(clientes_bp, url_prefix='/api')
+
+    # Teardown de base de datos
+    app.teardown_appcontext(close_db)
+
+    @app.route('/', methods=['GET'])
+    def home():
+        return jsonify({
+            'status': 'online',
+            'message': 'API Modular de Despacho Gas+ funcionando correctamente',
+            'version': '3.0.0 (Modular)'
+        })
+
+    return app
