@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -11,7 +11,8 @@ import {
   Save, 
   ArrowLeft,
   AlertCircle,
-  Zap
+  Zap,
+  Building2
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -19,18 +20,37 @@ import { toast } from 'react-hot-toast';
 export default function RegistrarClientePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [entidades, setEntidades] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     nombre: '',
     cedula: '',
     telefono: '',
     cupo_gasolina: '0',
-    cupo_gasoil: '0'
+    cupo_gasoil: '0',
+    entidad_id: ''
   });
+
+  useEffect(() => {
+    fetchEntidades();
+  }, []);
+
+  const fetchEntidades = async () => {
+    try {
+      const res = await axios.get('/api/entidades');
+      setEntidades(res.data);
+      // Seleccionar la primera por defecto si existe
+      if (res.data.length > 0) {
+        setFormData(prev => ({ ...prev, entidad_id: res.data[0].id }));
+      }
+    } catch (error) {
+      console.error('Error fetching entidades');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (parseFloat(formData.cupo_gasolina) <= 0 && parseFloat(formData.cupo_gasoil) <= 0) {
-      toast.error('Asigna al menos un cupo de combustible');
+    if (!formData.entidad_id) {
+      toast.error('Debes seleccionar una Entidad/Secretaría');
       return;
     }
 
@@ -57,16 +77,38 @@ export default function RegistrarClientePage() {
         </button>
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase underline decoration-red-600 decoration-4 underline-offset-8">Alta Bi-Combustible</h1>
-          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic tracking-widest">Configuración de Cupos Independientes</p>
+          <p className="text-slate-400 font-bold mt-4 uppercase text-[10px] tracking-widest italic">Vínculo de Entidad Insula Guaira</p>
         </div>
       </div>
 
       <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden p-12">
         <form onSubmit={handleSubmit} className="space-y-12">
+          {/* Clasificación Jerárquica */}
+          <div className="space-y-3 p-8 bg-slate-900 rounded-[2.5rem] relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[80px] opacity-20 -mr-16 -mt-16" />
+             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic relative z-10">Sub-categoría / Secretaría de Origen</label>
+             <div className="relative group z-10">
+                <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-red-600" />
+                <select 
+                  required
+                  value={formData.entidad_id}
+                  onChange={(e) => setFormData({...formData, entidad_id: e.target.value})}
+                  className="w-full pl-16 pr-6 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-white font-black italic uppercase focus:ring-4 focus:ring-red-600/20 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="text-slate-900">Seleccionar Secretaría...</option>
+                  {entidades.map((entidad) => (
+                    <option key={entidad.id} value={entidad.id} className="text-slate-900 uppercase font-bold">
+                       {entidad.nombre}
+                    </option>
+                  ))}
+                </select>
+             </div>
+          </div>
+
           {/* Datos Personales */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic pl-2">Beneficiario</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Beneficiario</label>
               <div className="relative group">
                 <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
@@ -78,7 +120,7 @@ export default function RegistrarClientePage() {
               </div>
             </div>
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic pl-2">Documento</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Documento</label>
               <div className="relative group">
                 <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
@@ -90,7 +132,7 @@ export default function RegistrarClientePage() {
               </div>
             </div>
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic pl-2">Teléfono</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 italic">Teléfono</label>
               <div className="relative group">
                 <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
                 <input 
@@ -102,8 +144,6 @@ export default function RegistrarClientePage() {
               </div>
             </div>
           </div>
-
-          <div className="h-[1px] bg-slate-50" />
 
           {/* Asignación de Cupos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -120,7 +160,6 @@ export default function RegistrarClientePage() {
                 onChange={(e) => setFormData({...formData, cupo_gasolina: e.target.value})}
                 className="w-full px-8 py-5 bg-white border-2 border-red-200 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all text-center tracking-tighter italic"
               />
-              <p className="text-[9px] font-black text-red-400 uppercase tracking-widest text-center mt-2 px-4">Asignación mensual de combustible de gasolina</p>
             </div>
 
             <div className="space-y-4 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200">
@@ -136,14 +175,13 @@ export default function RegistrarClientePage() {
                 onChange={(e) => setFormData({...formData, cupo_gasoil: e.target.value})}
                 className="w-full px-8 py-5 bg-white border-2 border-slate-300 rounded-[2rem] text-3xl font-black text-slate-900 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 transition-all text-center tracking-tighter italic"
               />
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center mt-2 px-4">Asignación mensual de combustible de gasoil</p>
             </div>
           </div>
 
           <div className="pt-10 flex items-center justify-between border-t border-slate-50">
             <div className="flex items-center text-slate-400 text-[9px] font-black uppercase tracking-widest italic">
               <AlertCircle className="w-4 h-4 mr-2 text-red-600" />
-              Los cupos se reiniciarán automáticamente al fin de mes
+              Consumo compartido con el presupuesto de la Secretaría
             </div>
             <button 
               type="submit" disabled={loading}
