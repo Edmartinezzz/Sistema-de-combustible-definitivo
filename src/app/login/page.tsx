@@ -1,239 +1,148 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { useClienteAuth } from '@/contexts/ClienteAuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { ExclamationTriangleIcon, UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, User, Fuel, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
-export default function Login() {
+export default function LoginPage() {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [esAdmin, setEsAdmin] = useState(true);
-  const [cedulaCliente, setCedulaCliente] = useState('');
-
-  const { login: loginAdmin } = useAuth();
-  const { login: loginCliente } = useClienteAuth();
-  const { theme } = useTheme();
   const router = useRouter();
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!usuario || !contrasena) {
-      setError('Por favor ingrese usuario y contraseña');
+      toast.error('Completa todos los campos');
       return;
     }
 
+    setLoading(true);
     try {
-      setError('');
-      setLoading(true);
-      await loginAdmin(usuario, contrasena);
-      router.push('/dashboard');
+      const response = await axios.post('/api/auth/login', { usuario, contrasena });
+      const { token, usuario: userData } = response.data;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      toast.success(`¡Bienvenido, ${userData.nombre}!`);
+      
+      // Animación antes de redirigir
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 500);
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
-      let message = 'Error al iniciar sesión';
-
-      if (error.response) {
-        message = error.response.data?.error || `Error del servidor: ${error.response.status}`;
-      } else if (error.request) {
-        message = 'No se recibió respuesta del servidor. Verifique su conexión.';
-      } else {
-        message = error.message || message;
-      }
-
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClienteLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!cedulaCliente) {
-      setError('Por favor ingrese su número de cédula');
-      return;
-    }
-
-    // Validar formato de cédula (7 u 8 dígitos)
-    const cedulaRegex = /^[0-9]{7,8}$/;
-    if (!cedulaRegex.test(cedulaCliente)) {
-      setError('La cédula debe tener 7 u 8 dígitos numéricos');
-      return;
-    }
-
-    try {
-      setError('');
-      setLoading(true);
-      await loginCliente(cedulaCliente);
-      // La redirección a /cliente/dashboard la maneja el contexto o podemos forzarla aquí si es necesario
-      // router.push('/cliente/dashboard'); 
-    } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
-      setError(error.message || 'Error al iniciar sesión. Verifique su cédula.');
+      toast.error(error.response?.data?.error || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 animate-fade-in transition-colors duration-300">
-      <div className="max-w-md w-full space-y-8 animate-fade-in-up">
-        <div>
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <div className="animate-bounce-in">
-              <img
-                src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'}
-                alt="Despacho Gas+ Logo"
-                className="h-32 w-auto transition-opacity duration-300"
-              />
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+      {/* Fondo decorativo sutil */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[120px] opacity-50" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100 rounded-full blur-[120px] opacity-50" />
+      </div>
 
-          <p className="text-center text-sm font-medium text-gray-600 dark:text-gray-400 mb-6">
-            Sistema de Gestión de Combustible
-          </p>
-          <h2 className="text-center text-xl font-semibold text-gray-800 dark:text-white">
-            {esAdmin ? 'Iniciar sesión' : 'Consulta de Usuario'}
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            {esAdmin
-              ? 'Ingrese sus credenciales de administrador'
-              : 'Ingrese su número de cédula para ver su saldo'}
-          </p>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-[420px] relative z-10"
+      >
+        {/* Header Logo */}
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-xl shadow-blue-500/10 mb-6 border border-white"
+          >
+            <Fuel className="w-10 h-10 text-blue-600" />
+          </motion.div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Despacho Gas+</h1>
+          <p className="text-slate-500 font-medium tracking-wide">PANEL DE ADMINISTRACIÓN</p>
         </div>
 
-        {/* Selector de tipo de usuario */}
-        <div className="flex rounded-md shadow-sm animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <button
-            type="button"
-            onClick={() => { setEsAdmin(true); setError(''); }}
-            className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:z-10 transition-all duration-200 hover:scale-105 active:scale-95 transform ${esAdmin
-              ? 'bg-red-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
-              }`}
-          >
-            <div className="flex items-center justify-center">
-              <LockClosedIcon className="h-5 w-5 mr-2" />
-              Administrador
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => { setEsAdmin(false); setError(''); }}
-            className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:z-10 transition-all duration-200 hover:scale-105 active:scale-95 transform ${!esAdmin
-              ? 'bg-red-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
-              }`}
-          >
-            <div className="flex items-center justify-center">
-              <UserCircleIcon className="h-5 w-5 mr-2" />
-              Usuario
-            </div>
-          </button>
-        </div>
-
-        {error && (
-          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 animate-fade-in-down">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">{error}</h3>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {esAdmin ? (
-          <form className="mt-8 space-y-6" onSubmit={handleAdminLogin}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="usuario" className="sr-only">
-                  Usuario
-                </label>
+        {/* Card de Login */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-2xl shadow-slate-200/50">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 px-1">Usuario</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
                 <input
-                  id="usuario"
-                  name="usuario"
                   type="text"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm transition-colors duration-200"
-                  placeholder="Usuario"
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-blue-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
+                  placeholder="Introduce tu usuario"
+                  autoComplete="username"
                 />
               </div>
-              <div>
-                <label htmlFor="contrasena" className="sr-only">
-                  Contraseña
-                </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 px-1">Contraseña</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
                 <input
-                  id="contrasena"
-                  name="contrasena"
                   type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm transition-colors duration-200"
-                  placeholder="Contraseña"
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-0 focus:ring-2 focus:ring-blue-500 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 active:shadow-inner hover:shadow-lg transform"
-              >
-                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex items-center justify-center py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98] overflow-hidden"
+            >
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div
+                    key="loader"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="content"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center"
+                  >
+                    Acceder al sistema
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
           </form>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleClienteLogin}>
-            <div className="rounded-md shadow-sm">
-              <div>
-                <label htmlFor="cedula-cliente" className="sr-only">
-                  Cédula
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserCircleIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                  </div>
-                  <input
-                    type="text"
-                    name="cedula-cliente"
-                    id="cedula-cliente"
-                    className="focus:ring-red-500 focus:border-red-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md p-2 border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                    placeholder="Ingrese su número de cédula"
-                    value={cedulaCliente}
-                    onChange={(e) => setCedulaCliente(e.target.value.replace(/\D/g, ''))}
-                    maxLength={8}
-                  />
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 active:shadow-inner hover:shadow-lg transform"
-              >
-                {loading ? 'Verificando...' : 'Ver mi saldo'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+          <div className="mt-8 text-center pt-6 border-t border-slate-100">
+            <p className="text-slate-400 text-sm font-medium">
+              © 2026 Sistema Combustible Definitivo
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
