@@ -40,6 +40,10 @@ export async function POST(request: Request) {
           { expiresIn: '8h' }
         );
 
+        // Disparar reset diario automático (sin bloquear el login)
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        fetch(`${baseUrl}/api/sistema/reset`, { method: 'POST' }).catch(() => {});
+
         return NextResponse.json({
           token,
           usuario: {

@@ -23,7 +23,7 @@ type Cliente = {
 type ClienteAuthContextType = {
   cliente: Cliente | null;
   loading: boolean;
-  login: (cedula: string) => Promise<void>;
+  login: (cedula: string, contrasena: string) => Promise<void>;
   logout: () => void;
   updateCliente: (updatedCliente: Cliente) => void;
 };
@@ -51,9 +51,9 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (cedula: string) => {
+  const login = async (cedula: string, contrasena: string) => {
     try {
-      const { data } = await api.post('/api/clientes/login', { cedula });
+      const { data } = await api.post('/api/clientes/login', { cedula, contrasena });
 
       // Guardar el token y los datos del cliente
       localStorage.setItem('clienteToken', data.token);

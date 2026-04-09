@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useClienteAuth } from '@/contexts/ClienteAuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { FiDroplet, FiUser, FiArrowLeft } from 'react-icons/fi';
+import { FiUser, FiArrowLeft, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function ClienteLogin() {
   const [cedula, setCedula] = useState('');
+  const [contrasena, setContrasena] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useClienteAuth();
-  const { theme } = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -25,96 +25,127 @@ export default function ClienteLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar formato de cédula venezolana (7 u 8 dígitos)
     const cedulaRegex = /^[0-9]{7,8}$/;
     if (!cedulaRegex.test(cedula)) {
       setError('La cédula debe tener 7 u 8 dígitos numéricos');
       return;
     }
 
+    if (!contrasena || contrasena.length < 4) {
+      setError('Ingresa tu contraseña');
+      return;
+    }
+
     try {
       setError('');
       setLoading(true);
-      await login(cedula);
-      // Redirección manejada por el contexto después del login exitoso
+      await login(cedula, contrasena);
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
-      setError(error.message || 'Error al iniciar sesión. Por favor, intente nuevamente.');
+      setError(error.message || 'Cédula o contraseña incorrecta.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-600 to-red-700 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8 relative animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-600 to-red-800 py-12 px-4 relative">
       <button
         onClick={() => router.push('/')}
-        className="absolute top-4 left-4 flex items-center text-white hover:text-red-100 transition-all duration-200 hover:scale-105 active:scale-95 transform"
+        className="absolute top-4 left-4 flex items-center text-white/80 hover:text-white transition-colors text-sm font-semibold"
       >
-        <FiArrowLeft className="h-6 w-6 mr-2" />
-        Volver al inicio
+        <FiArrowLeft className="mr-2" />
+        Volver
       </button>
 
-      <div className="max-w-md w-full space-y-8 animate-scale-in">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-colors duration-300">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4 animate-bounce-in">
-              <img
-                src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'}
-                alt="Despacho Gas+ Logo"
-                className="h-24 w-auto transition-opacity duration-300"
-              />
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-3xl shadow-2xl p-10">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 bg-red-600 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-red-600/30">
+              <FiUser className="w-9 h-9 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Portal del Usuario</h1>
-            <p className="text-gray-600 dark:text-gray-300">Ingresa tu número de cédula para acceder</p>
+            <h1 className="text-3xl font-black text-slate-900 uppercase italic tracking-tight">
+              Portal <span className="text-red-600">Beneficiario</span>
+            </h1>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
+              Sistema Insula Guaira
+            </p>
           </div>
 
+          {/* Error */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg relative mb-6 animate-fade-in-down" role="alert">
-              <span className="block sm:inline">{error}</span>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6 text-sm font-semibold">
+              {error}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="cedula" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Cédula */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">
                 Número de Cédula
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                </div>
+                <FiUser className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                 <input
-                  id="cedula"
-                  name="cedula"
                   type="text"
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
                   placeholder="Ej: 12345678"
                   value={cedula}
                   onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
                   maxLength={8}
-                  pattern="\d{7,8}"
-                  title="Ingrese un número de cédula válido (7 u 8 dígitos)"
+                  className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-slate-900 font-bold focus:border-red-600 focus:ring-0 transition-all outline-none"
                 />
+              </div>
+            </div>
+
+            {/* Contraseña */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">
+                Contraseña
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Tu contraseña de acceso"
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                  className="w-full pl-14 pr-14 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-slate-900 font-bold focus:border-red-600 focus:ring-0 transition-all outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 active:shadow-inner hover:shadow-lg transform"
+              className="w-full py-4 bg-red-600 hover:bg-slate-900 text-white rounded-2xl font-black uppercase italic tracking-tight transition-all shadow-xl shadow-red-600/30 active:scale-95 disabled:opacity-50 mt-2"
             >
-              {loading ? 'Verificando...' : 'Acceder'}
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Verificando...</span>
+                </div>
+              ) : (
+                'Acceder al Portal'
+              )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+              className="text-xs text-slate-400 hover:text-red-600 transition-colors font-bold uppercase tracking-widest"
             >
-              ¿Eres administrador? Inicia sesión aquí
+              ¿Eres administrador?
             </button>
           </div>
         </div>
