@@ -27,6 +27,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No se encontraron datos' }, { status: 404 });
     }
 
+    // Obtener el historial de retiros del cliente
+    const { data: retiros } = await supabaseAdmin
+      .from('retiros')
+      .select('*')
+      .eq('cliente_id', decoded.id)
+      .order('fecha', { ascending: false });
+
+    cliente.retiros = retiros || [];
+
     // Omitir el hash de la contraseña por seguridad
     const { password, ...datosSeguros } = cliente;
 

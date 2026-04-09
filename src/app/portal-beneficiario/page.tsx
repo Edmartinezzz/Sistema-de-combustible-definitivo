@@ -184,6 +184,41 @@ export default function PortalBeneficiario() {
            </p>
         </div>
 
+        {/* Historial de Retiros */}
+        <div className="mt-8 space-y-4 pb-12">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest italic flex items-center">
+              <Zap className="w-4 h-4 mr-2" />
+              Historial Reciente
+            </h3>
+            
+            {(!data.retiros || data.retiros.length === 0) ? (
+              <div className="bg-white p-6 rounded-[2rem] border border-dashed border-slate-200 text-center">
+                  <p className="text-slate-400 text-xs font-bold uppercase italic tracking-widest">No hay despachos registrados</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {data.retiros.slice(0, 5).map((retiro: any) => (
+                  <div key={retiro.id} className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex items-center justify-between">
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(retiro.fecha).toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+                        <span className="font-black text-slate-900 italic tracking-tighter uppercase">{retiro.tipo_combustible}</span>
+                     </div>
+                     <div className="flex flex-col items-end">
+                        <span className={`text-lg font-black italic tracking-tighter ${retiro.tipo_combustible === 'Gasolina' ? 'text-red-600' : 'text-slate-900'}`}>
+                          -{retiro.cantidad} <span className="text-[10px] uppercase">GL</span>
+                        </span>
+                     </div>
+                  </div>
+                ))}
+                {data.retiros.length > 5 && (
+                  <p className="text-center text-[10px] text-slate-400 font-bold uppercase italic tracking-widest mt-4">
+                    Mostrando últimos 5 despachos
+                  </p>
+                )}
+              </div>
+            )}
+        </div>
+
       </main>
 
       {/* Botón de Acción Flotante (Self-Service) */}
