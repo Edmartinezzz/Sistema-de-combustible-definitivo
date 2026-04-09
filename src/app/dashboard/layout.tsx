@@ -50,11 +50,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-white flex text-slate-900">
-      {/* Sidebar */}
+      {/* Sidebar - Oculto en móvil */}
       <motion.aside 
         initial={false}
         animate={{ width: isSidebarOpen ? 280 : 80 }}
-        className="fixed left-0 top-0 h-full bg-white border-r border-slate-100 z-50 flex flex-col transition-all duration-300 shadow-sm"
+        className="hidden md:flex fixed left-0 top-0 h-full bg-white border-r border-slate-100 z-50 flex-col transition-all duration-300 shadow-sm"
       >
         <div className="h-24 flex items-center px-6 mb-4">
           <div className="bg-red-600 p-3 rounded-2xl text-white shadow-xl shadow-red-600/30">
@@ -113,8 +113,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </motion.aside>
 
-      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-[280px]' : 'ml-[80px]'}`}>
-        <header className="h-24 bg-white/80 backdrop-blur-xl border-b border-slate-50 flex items-center justify-between px-10 sticky top-0 z-40">
+      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'md:ml-[280px]' : 'md:ml-[80px]'}`}>
+        {/* Header del Dashboard - Oculto en móvil por solicitud del usuario */}
+        <header className="hidden md:flex h-24 bg-white/80 backdrop-blur-xl border-b border-slate-50 items-center justify-between px-10 sticky top-0 z-40">
           <div className="flex items-center space-x-6">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -137,7 +138,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <div className="p-10 pb-20 max-w-7xl mx-auto">
+        <div className="p-4 md:p-10 pb-20 max-w-7xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div key={pathname} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }}>
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
           <AnimatePresence mode="wait">
             <motion.div key={pathname} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }}>
               {children}

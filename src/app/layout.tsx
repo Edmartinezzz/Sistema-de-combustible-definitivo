@@ -41,7 +41,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <ClienteAuthProvider>
                 <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 relative flex flex-col md:flex-row">
                   {/* Navegación para Escritorio (Sidebar) */}
-                  <SidebarWrapper />
+                  <div className="hidden md:block">
+                    <SidebarWrapper />
+                  </div>
 
                   <div className="flex-1 flex flex-col min-w-0">
                     {/* Barra Superior para Escritorio */}
@@ -49,8 +51,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <Topbar />
                     </div>
 
-                    {/* Botón de tema flotante (solo en desktop o ajuste según diseño) */}
-                    <div className="fixed top-4 right-4 z-50 md:right-8">
+                    {/* Botón de tema flotante (Oculto en móvil por solicitud del usuario) */}
+                    <div className="hidden md:block fixed top-4 right-4 z-50 md:right-8">
                       <ThemeToggleButton />
                     </div>
 
