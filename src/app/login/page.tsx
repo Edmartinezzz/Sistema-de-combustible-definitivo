@@ -138,10 +138,10 @@ export default function LoginPage() {
                     <input
                       type={mode === 'admin' ? 'text' : 'text'}
                       value={usuario}
-                      onChange={(e) => setUsuario(mode === 'cliente' ? e.target.value.replace(/\D/g, '') : e.target.value)}
+                      onChange={(e) => setUsuario(e.target.value)}
                       className="block w-full pl-14 pr-5 py-4.5 bg-slate-50 border-2 border-transparent focus:border-red-500/10 focus:ring-4 focus:ring-red-500/5 rounded-2xl text-slate-900 placeholder-slate-300 font-bold transition-all outline-none"
                       placeholder={mode === 'admin' ? 'Ej: admin' : 'Ej: 12345678'}
-                      maxLength={mode === 'cliente' ? 8 : 20}
+                      maxLength={20}
                     />
                   </div>
                 </div>
