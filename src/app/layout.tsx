@@ -28,6 +28,16 @@ export const metadata: Metadata = {
   },
 };
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+      </head>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <QueryProvider>
+            <AuthProvider>
               <ClienteAuthProvider>
                 <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 relative flex flex-col">
                   {/* Contenido Principal - Sin barras laterales ni superiores redundantes */}
