@@ -101,12 +101,13 @@ export default function HistorialPage() {
       doc.setFont('helvetica', 'bold');
       doc.text(`${r.litros} GL`, x + 25, y + 54);
 
-      // Fecha de Retiro (Novedad)
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`FECHA: ${r.fecha}`, x + 5, y + 58);
+      // Fecha de Retiro (Mejorada: Más grande y negra)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
       doc.setTextColor(30, 41, 59);
+      doc.text(`FECHA:`, x + 55, y + 54);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${r.fecha}`, x + 67, y + 54);
 
       // QR Code
       try {
