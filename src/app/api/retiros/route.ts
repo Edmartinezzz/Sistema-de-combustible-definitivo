@@ -124,7 +124,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from('retiros')
-      .select('*, clientes(nombre)')
+      .select('*, clientes(*, entidades(*))')
       .order('fecha', { ascending: false });
 
     if (error) throw error;
