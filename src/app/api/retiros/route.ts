@@ -73,36 +73,45 @@ export async function POST(request: Request) {
     }
 
     // --- EJECUCIÓN (Transaccional) ---
-
     // 1. Registrar Retiro
-    await supabaseAdmin.from('retiros').insert([{
+    const { error: insertError } = await supabaseAdmin.from('retiros').insert([{
       cliente_id,
       litros: cantidadNum,
       placa: placa || cliente.placa,
+      registrado_por: decoded.nombre || 'Autogestión',
       usuario_id: 1, // ID del administrador por defecto para autogestión
       tipo_combustible,
       fecha: new Date().toISOString().split('T')[0], // Solo la fecha YYYY-MM-DD
       hora: new Date().toLocaleTimeString('en-US', { hour12: false }) // Formato HH:MM:SS
     }]);
 
-    // 2. Actualizar Cliente
-    if (tipo_combustible === 'Gasolina') {
-      await supabaseAdmin.from('clientes').update({ consumo_gasolina: cliente.consumo_gasolina + cantidadNum }).eq('id', cliente_id);
-    } else {
-      await supabaseAdmin.from('clientes').update({ consumo_gasoil: cliente.consumo_gasoil + cantidadNum }).eq('id', cliente_id);
+    if (insertError) {
+      console.error('Error al insertar retiro:', insertError);
+      throw new Error(`Fallo al registrar retiro: ${insertError.message}`);
     }
+
+    // 2. Actualizar Cliente
+    const { error: clienteError } = await (tipo_combustible === 'Gasolina' 
+      ? supabaseAdmin.from('clientes').update({ consumo_gasolina: cliente.consumo_gasolina + cantidadNum }).eq('id', cliente_id)
+      : supabaseAdmin.from('clientes').update({ consumo_gasoil: cliente.consumo_gasoil + cantidadNum }).eq('id', cliente_id));
+    
+    if (clienteError) throw clienteError;
 
     // 3. Actualizar Entidad Madre
     if (cliente.entidades) {
-      if (tipo_combustible === 'Gasolina') {
-        await supabaseAdmin.from('entidades').update({ consumo_gasolina: cliente.entidades.consumo_gasolina + cantidadNum }).eq('id', cliente.entidad_id);
-      } else {
-        await supabaseAdmin.from('entidades').update({ consumo_gasoil: cliente.entidades.consumo_gasoil + cantidadNum }).eq('id', cliente.entidad_id);
-      }
+      const { error: entidadError } = await (tipo_combustible === 'Gasolina'
+        ? supabaseAdmin.from('entidades').update({ consumo_gasolina: cliente.entidades.consumo_gasolina + cantidadNum }).eq('id', cliente.entidad_id)
+        : supabaseAdmin.from('entidades').update({ consumo_gasoil: cliente.entidades.consumo_gasoil + cantidadNum }).eq('id', cliente.entidad_id));
+      
+      if (entidadError) throw entidadError;
     }
 
     // 4. Actualizar Inventario
-    await supabaseAdmin.from('inventario').update({ cantidad_actual: inventario.cantidad_actual - cantidadNum }).eq('tipo_combustible', tipo_combustible);
+    const { error: invError } = await supabaseAdmin.from('inventario')
+      .update({ cantidad_actual: inventario.cantidad_actual - cantidadNum })
+      .eq('tipo_combustible', tipo_combustible);
+    
+    if (invError) throw invError;
 
     return NextResponse.json({ success: true });
 
