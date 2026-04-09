@@ -152,24 +152,24 @@ export default function HistorialPage() {
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative group flex-1 w-full max-w-md">
+      <div className="flex flex-col md:flex-row gap-6 items-center">
+        <div className="relative group flex-1 w-full">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-red-600 transition-colors" />
           <input 
-            type="text" placeholder="Búsqueda por beneficiario o placa..."
+            type="text" placeholder="Buscar por nombre o placa..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] text-sm font-bold focus:ring-4 focus:ring-red-600/5 focus:border-red-600 transition-all shadow-sm italic"
+            className="w-full pl-14 pr-6 py-6 bg-white border-2 border-slate-100 rounded-[2rem] text-lg font-bold focus:ring-4 focus:ring-red-600/5 focus:border-red-600 transition-all shadow-sm italic"
           />
         </div>
 
-        <div className="flex items-center bg-white border border-slate-100 rounded-[2rem] px-6 py-4 shadow-sm space-x-4 w-full md:w-auto">
-           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Fecha:</span>
+        <div className="flex items-center bg-white border-2 border-slate-100 rounded-[2rem] px-8 py-6 shadow-sm space-x-4 w-full md:w-auto overflow-hidden">
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic whitespace-nowrap">Fecha de Carga:</span>
            <input 
              type="date" 
              value={dateFilter}
              onChange={(e) => setDateFilter(e.target.value)}
-             className="bg-transparent border-none focus:ring-0 text-sm font-black text-slate-900 uppercase italic cursor-pointer"
+             className="bg-transparent border-none focus:ring-0 text-lg font-black text-slate-900 uppercase italic cursor-pointer w-full text-right"
            />
         </div>
       </div>
@@ -188,23 +188,23 @@ export default function HistorialPage() {
                 transition={{ delay: idx * 0.03 }}
                 className="group flex flex-col md:flex-row md:items-center justify-between p-8 hover:bg-red-50/20 transition-colors"
               >
-                <div className="flex items-center space-x-8">
-                  <div className="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center text-white group-hover:bg-red-600 transition-all duration-500 shadow-lg">
-                    <ArrowDownLeft className="w-8 h-8" />
+                <div className="flex items-center space-x-6">
+                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white group-hover:bg-red-600 transition-all duration-500 shadow-lg shrink-0">
+                    <ArrowDownLeft className="w-7 h-7" />
                   </div>
                   
-                  <div>
-                    <h4 className="text-xl font-black text-slate-900 leading-none mb-2 uppercase italic tracking-tighter">
+                  <div className="min-w-0">
+                    <h4 className="text-lg font-black text-slate-900 leading-none mb-2 uppercase italic tracking-tighter truncate">
                       {retiro.clientes?.nombre || 'Beneficiario'}
                     </h4>
-                    <div className="flex items-center space-x-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      <span className="flex items-center">
-                        <User className="w-3 h-3 mr-2 text-red-600" />
-                        ID: {retiro.clientes?.cedula || 'N/A'}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+                      <span className="flex items-center whitespace-nowrap">
+                        <User className="w-3 h-3 mr-1.5 text-red-600" />
+                        {retiro.clientes?.cedula || 'N/A'}
                       </span>
-                      <span className="flex items-center">
-                        <Fuel className="w-3 h-3 mr-2 text-red-600" />
-                        VEH: {retiro.placa}
+                      <span className="flex items-center whitespace-nowrap">
+                        <Fuel className="w-3 h-3 mr-1.5 text-red-600" />
+                        {retiro.placa}
                       </span>
                     </div>
                   </div>

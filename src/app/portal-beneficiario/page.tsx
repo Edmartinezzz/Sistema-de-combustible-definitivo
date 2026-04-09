@@ -73,7 +73,7 @@ export default function PortalBeneficiario() {
   const gasoilPerc = (data.consumo_gasoil / data.cupo_gasoil) * 100 || 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pb-20">
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-32">
       {/* Header Premium */}
       <header className="bg-slate-900 pt-12 pb-20 px-6 rounded-b-[3rem] shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32" />
@@ -227,8 +227,8 @@ export default function PortalBeneficiario() {
 
       </main>
 
-      {/* Botón de Acción Flotante (Self-Service) */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 z-50">
+      {/* Botón de Acción Flotante (Self-Service) - Reposicionado para Móvil */}
+      <div className="fixed bottom-24 md:bottom-8 left-0 right-0 p-6 z-40">
          <button 
            onClick={() => setShowWithdrawForm(true)}
            className="w-full max-w-lg mx-auto py-5 bg-red-600 hover:bg-black text-white rounded-[2rem] font-black shadow-[0_15px_40px_rgba(220,38,38,0.4)] transition-all flex items-center justify-center space-x-3 uppercase italic tracking-tighter active:scale-95"
@@ -280,17 +280,17 @@ export default function PortalBeneficiario() {
                    setLoading(false);
                  }
                }} className="space-y-8">
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Tipo de Combustible</label>
-                    <select name="tipo" required className="w-full px-6 py-5 bg-slate-50 border-none rounded-2xl text-slate-900 font-black italic uppercase appearance-none cursor-pointer">
+                    <select name="tipo" required className="w-full px-6 py-6 bg-slate-100 border-2 border-transparent focus:border-red-600 rounded-2xl text-slate-900 font-black italic uppercase appearance-none cursor-pointer transition-all text-lg">
                        <option value="Gasolina">⛽ Gasolina Premium</option>
                        <option value="Gasoil">⚡ Gasoil (Diesel)</option>
                     </select>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic ml-2">Cantidad a Retirar (Galones)</label>
-                    <input name="cantidad" type="number" step="0.1" required placeholder="0.0" className="w-full px-8 py-6 bg-slate-50 border-none rounded-[2rem] text-4xl font-black text-center text-slate-900 focus:ring-4 focus:ring-red-600/10 transition-all font-mono" />
+                    <input name="cantidad" type="number" step="0.1" required placeholder="0.0" className="w-full px-8 py-8 bg-slate-100 border-2 border-transparent focus:border-red-600 rounded-[2.5rem] text-5xl font-black text-center text-slate-900 focus:ring-4 focus:ring-red-600/10 transition-all font-mono" />
                   </div>
 
                   <div className="flex items-center p-4 bg-slate-900 rounded-2xl space-x-4">
