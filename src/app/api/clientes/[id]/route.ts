@@ -38,7 +38,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 
     const updates: any = {
       nombre,
-      cedula,
+      cedula: cedula.toString().replace(/\D/g, ''),
       telefono,
       vehiculo,
       placa,

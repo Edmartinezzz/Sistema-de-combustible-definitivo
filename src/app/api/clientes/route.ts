@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       .from('clientes')
       .insert([{
         nombre,
-        cedula,
+        cedula: cedula.toString().replace(/\D/g, ''),
         telefono,
         vehiculo,
         placa,

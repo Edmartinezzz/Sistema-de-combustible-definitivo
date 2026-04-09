@@ -56,10 +56,13 @@ export async function POST(request: Request) {
     }
 
     // --- 2. INTENTAR COMO BENEFICIARIO (Cédula) ---
+    // Limpiamos la cédula de puntos u otros caracteres que el usuario pueda haber introducido
+    const cedulaLimpia = usuario.replace(/\D/g, '');
+    
     const { data: cliente } = await supabaseAdmin
       .from('clientes')
       .select('*, entidades(*)')
-      .eq('cedula', usuario)
+      .eq('cedula', cedulaLimpia)
       .single();
 
     if (cliente && cliente.password) {
