@@ -3,9 +3,15 @@
 import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { FiSun, FiMoon } from 'react-icons/fi';
+import { usePathname } from 'next/navigation';
 
 export default function ThemeToggleButton() {
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
+
+  // hide on login and public pages
+  const hideOn = ['/login', '/', '/cliente/login'];
+  if (hideOn.includes(pathname || '')) return null;
 
   return (
     <button

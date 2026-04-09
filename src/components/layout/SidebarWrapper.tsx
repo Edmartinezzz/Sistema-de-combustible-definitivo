@@ -7,8 +7,9 @@ export default function SidebarWrapper() {
   const pathname = usePathname() || '/';
 
   // hide sidebar on login and public pages
-  const hideOn = ['/login', '/'];
-  if (hideOn.includes(pathname)) return null;
+  const hideOn = ['/login', '/', '/cliente/login'];
+  if (hideOn.includes(pathname || '')) return null;
+
 
   return <Sidebar />;
 }

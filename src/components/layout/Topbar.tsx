@@ -1,9 +1,16 @@
 "use client";
 import React from 'react';
 import ThemeToggle from '../ui/ThemeToggle';
+import { usePathname } from 'next/navigation';
 // no external image required for avatar — use initials placeholder
 
 export default function Topbar() {
+  const pathname = usePathname();
+
+  // hide topbar on login and public pages
+  const hideOn = ['/login', '/', '/cliente/login'];
+  if (hideOn.includes(pathname || '')) return null;
+
   return (
     <header className="w-full bg-white dark:bg-gray-800 border-b border-red-100 dark:border-gray-700 shadow-sm animate-fade-in-down transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-6">

@@ -65,6 +65,24 @@
   p {
     @apply text-gray-700 leading-relaxed;
   }
+
+  /* PWA - Native feel improvements */
+  body {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 @layer components {
@@ -350,5 +368,32 @@
 
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/70 backdrop-blur-xl border border-white/20;
+}
+
+.glass-dark {
+  @apply bg-slate-900/80 backdrop-blur-xl border border-white/5;
+}
+
+/* Safe areas for mobile devices with notches */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Custom scrollbar for premium touch */
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
 }
 

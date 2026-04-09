@@ -14,7 +14,7 @@ export default function BottomNav() {
   ];
 
   // Specific check for layout visibility
-  const hideOn = ['/login', '/'];
+  const hideOn = ['/login', '/', '/cliente/login'];
   if (hideOn.includes(pathname || '')) return null;
 
   return (

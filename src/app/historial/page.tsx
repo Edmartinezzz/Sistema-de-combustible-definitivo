@@ -186,44 +186,47 @@ export default function HistorialPage() {
                 key={retiro.id}
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className="group flex flex-col md:flex-row md:items-center justify-between p-8 hover:bg-red-50/20 transition-colors"
+                className="group flex flex-col md:flex-row md:items-center justify-between p-6 md:p-8 hover:bg-red-50/20 transition-colors"
               >
-                <div className="flex items-center space-x-6">
-                  <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white group-hover:bg-red-600 transition-all duration-500 shadow-lg shrink-0">
-                    <ArrowDownLeft className="w-7 h-7" />
+                <div className="flex items-center space-x-4 md:space-x-6">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white group-hover:bg-red-600 transition-all duration-500 shadow-lg shrink-0">
+                    <ArrowDownLeft className="w-6 h-6 md:w-7 md:h-7" />
                   </div>
                   
-                  <div className="min-w-0">
-                    <h4 className="text-lg font-black text-slate-900 leading-none mb-2 uppercase italic tracking-tighter truncate">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-base md:text-lg font-black text-slate-900 leading-tight mb-1 uppercase italic tracking-tighter truncate max-w-[200px] md:max-w-none">
                       {retiro.clientes?.nombre || 'Beneficiario'}
                     </h4>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] md:tracking-[0.15em]">
                       <span className="flex items-center whitespace-nowrap">
-                        <User className="w-3 h-3 mr-1.5 text-red-600" />
+                        <User className="w-2.5 h-2.5 mr-1 text-red-600" />
                         {retiro.clientes?.cedula || 'N/A'}
                       </span>
                       <span className="flex items-center whitespace-nowrap">
-                        <Fuel className="w-3 h-3 mr-1.5 text-red-600" />
+                        <Fuel className="w-2.5 h-2.5 mr-1 text-red-600" />
                         {retiro.placa}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex md:items-center mt-6 md:mt-0 text-left md:text-right flex-col md:flex-row md:space-x-12">
-                  <div className="mb-4 md:mb-0">
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic mb-2">Sincronización</p>
-                    <p className="text-sm font-black text-slate-900 uppercase">
-                      {format(new Date(retiro.fecha), "PPP", { locale: es })}
-                    </p>
-                    <p className="text-xs font-bold text-red-600">{format(new Date(retiro.fecha), "hh:mm a")}</p>
+                <div className="flex flex-col md:flex-row md:items-center mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50 md:space-x-12">
+                  <div className="flex items-center justify-between md:block mb-2 md:mb-0">
+                    <p className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-widest italic md:mb-2">Sincronización</p>
+                    <div className="text-right md:text-left">
+                      <p className="text-xs md:text-sm font-black text-slate-900 uppercase">
+                        {format(new Date(retiro.fecha), "PPP", { locale: es })}
+                      </p>
+                      <p className="text-[10px] md:text-xs font-bold text-red-600">{format(new Date(retiro.fecha), "hh:mm a")}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-4xl font-black text-red-600 tracking-tighter italic">
-                      -{retiro.litros} <span className="text-sm font-black opacity-40 uppercase">GL</span>
+                  <div className="flex items-center justify-between md:block">
+                    <p className="md:hidden text-[9px] font-black text-slate-300 uppercase tracking-widest italic">Cantidad</p>
+                    <p className="text-3xl md:text-4xl font-black text-red-600 tracking-tighter italic">
+                      -{retiro.litros} <span className="text-xs md:text-sm font-black opacity-40 uppercase">GL</span>
                     </p>
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mt-1 italic">Operador: {retiro.registrado_por}</p>
                   </div>
+                  <p className="hidden md:block text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mt-1 italic">Operador: {retiro.registrado_por}</p>
                 </div>
               </motion.div>
             ))}
