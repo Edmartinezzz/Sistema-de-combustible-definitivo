@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { ejecutarResetDiario } from '@/lib/resetDiario';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'gas-despacho-2026-premium-secret';
 
@@ -55,6 +56,9 @@ export async function POST(request: Request) {
       SECRET_KEY,
       { expiresIn: '8h' }
     );
+
+    // Disparar reset diario automático
+    ejecutarResetDiario().catch(console.error);
 
     // Omitir el hash de la contraseña en la respuesta
     const { password, ...clienteSeguro } = cliente;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { ejecutarResetDiario } from '@/lib/resetDiario';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'gas-despacho-2026-premium-secret';
 
@@ -41,8 +42,7 @@ export async function POST(request: Request) {
         );
 
         // Disparar reset diario automático (sin bloquear el login)
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        fetch(`${baseUrl}/api/sistema/reset`, { method: 'POST' }).catch(() => {});
+        ejecutarResetDiario().catch(console.error);
 
         return NextResponse.json({
           token,
@@ -71,6 +71,9 @@ export async function POST(request: Request) {
            SECRET_KEY,
            { expiresIn: '8h' }
          );
+ 
+         // Disparar reset diario automático para beneficiarios también
+         ejecutarResetDiario().catch(console.error);
 
          return NextResponse.json({
            token,
