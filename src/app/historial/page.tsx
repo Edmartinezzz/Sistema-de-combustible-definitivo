@@ -101,6 +101,13 @@ export default function HistorialPage() {
       doc.setFont('helvetica', 'bold');
       doc.text(`${r.litros} GL`, x + 25, y + 54);
 
+      // Fecha de Retiro (Novedad)
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`FECHA: ${r.fecha}`, x + 5, y + 58);
+      doc.setTextColor(30, 41, 59);
+
       // QR Code
       try {
         const qrUrl = `${window.location.origin}/verificar-ticket/${r.id}`;
