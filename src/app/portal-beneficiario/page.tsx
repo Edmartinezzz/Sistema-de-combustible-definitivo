@@ -310,102 +310,116 @@ export default function PortalBeneficiario() {
         )}
       </AnimatePresence>
 
-      {/* Modal de Ticket Premum */}
+      {/* Modal de Ticket Premium */}
       <AnimatePresence>
         {showTicket && currentTicket && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/95 backdrop-blur-2xl" />
-            <motion.div initial={{ scale: 0.9, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.9, y: 20, opacity: 0 }} className="relative w-full max-w-md">
+            <motion.div initial={{ scale: 0.9, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.9, y: 20, opacity: 0 }} className="relative w-full max-w-2xl my-auto">
                
-               {/* Ticket Visual */}
-               <div id="ticket-retiro" className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl relative">
-                  <div className="bg-slate-900 p-8 text-center relative overflow-hidden">
+               {/* Ticket Visual (Horizontal) */}
+               <div id="ticket-retiro" className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl relative border-4 border-white">
+                  <div className="bg-slate-900 p-6 flex items-center justify-between relative overflow-hidden">
                      <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[60px] opacity-20 -mr-16 -mt-16" />
-                     <p className="text-red-600 font-black italic text-xl tracking-tighter mb-1 uppercase">INSULA<span className="text-white">GUAIRA</span></p>
-                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Comprobante de Despacho Digital</p>
+                     <div className="text-left relative z-10">
+                        <p className="text-red-600 font-black italic text-xl tracking-tighter mb-0 uppercase">INSULA<span className="text-white">GUAIRA</span></p>
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Comprobante Digital de Despacho</p>
+                     </div>
+                     <div className="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10 text-right">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">ID Ticket</p>
+                        <p className="font-mono text-xs font-bold text-white tracking-widest leading-none">#{currentTicket.id.toString().padStart(6, '0')}</p>
+                     </div>
                   </div>
 
-                  <div className="p-8 space-y-6">
-                     <div className="flex justify-between items-start">
-                        <div>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Beneficiario</p>
-                           <p className="font-black text-slate-900 italic uppercase tracking-tight text-lg">{currentTicket.beneficiario}</p>
-                           <p className="text-xs font-bold text-slate-400 tracking-widest opacity-60">ID: {currentTicket.cedula}</p>
-                        </div>
-                        <div className="text-right">
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">Fecha / Hora</p>
-                           <p className="font-black text-slate-900 text-xs italic uppercase tracking-tighter">{currentTicket.fecha} - {currentTicket.hora}</p>
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-2 gap-4 border-y border-slate-100 py-6">
-                        <div>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">Vehículo / Placa</p>
-                           <p className="font-black text-slate-900 text-xs uppercase italic">{currentTicket.vehiculo}</p>
-                           <p className="font-black text-red-600 text-sm tracking-widest leading-none mt-1">{currentTicket.placa}</p>
-                        </div>
-                        <div className="text-right">
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">Entidad Madre</p>
-                           <p className="font-black text-slate-900 text-xs uppercase italic truncate">{currentTicket.entidad}</p>
-                        </div>
-                     </div>
-
-                     <div className="flex items-center justify-between bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                        <div className="flex items-center space-x-3">
-                           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                              {currentTicket.tipo_combustible === 'Gasolina' ? <Fuel className="w-5 h-5 text-red-600" /> : <Zap className="w-5 h-5 text-slate-900" />}
+                  <div className="p-8 flex flex-col md:flex-row gap-8 items-center">
+                     {/* Lado Izquierdo: Datos */}
+                     <div className="flex-1 space-y-6 w-full">
+                        <div className="grid grid-cols-2 gap-6">
+                           <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Beneficiario</p>
+                              <p className="font-black text-slate-900 italic uppercase tracking-tight text-lg leading-tight">{currentTicket.beneficiario}</p>
+                              <p className="text-xs font-bold text-slate-400 tracking-widest opacity-60">Cedula: {currentTicket.cedula}</p>
                            </div>
-                           <p className="font-black text-slate-900 italic uppercase tracking-tighter">{currentTicket.tipo_combustible}</p>
+                           <div className="text-right">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entidad Madre</p>
+                              <p className="font-black text-slate-900 text-xs uppercase italic truncate">{currentTicket.entidad}</p>
+                           </div>
                         </div>
-                        <p className="text-3xl font-black italic tracking-tighter text-red-600">{currentTicket.litros} <span className="text-xs uppercase opacity-40">GL</span></p>
+
+                        <div className="grid grid-cols-2 gap-6 border-y border-slate-100 py-6">
+                           <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Vehículo / Placa</p>
+                              <p className="font-black text-slate-900 text-xs uppercase italic truncate w-full">{currentTicket.vehiculo}</p>
+                              <p className="font-black text-red-600 text-sm tracking-widest mt-1">{currentTicket.placa}</p>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Fecha y Hora</p>
+                              <p className="font-black text-slate-900 text-[10px] uppercase italic leading-tight">{currentTicket.fecha}</p>
+                              <p className="font-black text-slate-400 text-[9px] uppercase italic">{currentTicket.hora}</p>
+                           </div>
+                        </div>
+
+                        <div className="flex items-center justify-between bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                           <div className="flex items-center space-x-3">
+                              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100">
+                                 {currentTicket.tipo_combustible === 'Gasolina' ? <Fuel className="w-6 h-6 text-red-600" /> : <Zap className="w-6 h-6 text-slate-900" />}
+                              </div>
+                              <p className="font-black text-slate-900 italic uppercase tracking-tighter text-xl">{currentTicket.tipo_combustible}</p>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-4xl font-black italic tracking-tighter text-red-600">{currentTicket.litros} <span className="text-sm uppercase opacity-40">GL</span></p>
+                           </div>
+                        </div>
                      </div>
 
-                     {/* QR Code */}
-                     <div className="flex flex-col items-center py-4 space-y-4">
-                        <div className="p-4 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-inner">
+                     {/* Lado Derecho: QR */}
+                     <div className="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-[2.5rem] shadow-xl text-center min-w-[200px]">
+                        <div className="p-3 bg-white rounded-2xl shadow-2xl">
                            <QRCodeCanvas 
                               value={`${window.location.origin}/verificar-ticket/${currentTicket.id}`} 
-                              size={140}
+                              size={120}
                               level="H"
-                              includeMargin={false}
                            />
                         </div>
-                        <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] text-center">Escanea para Validar Legalidad</p>
+                        <p className="text-[7px] font-black text-slate-500 uppercase tracking-[0.3em] mt-4 leading-relaxed">
+                          Escanea para Validar<br/>Legalidad del Despacho
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-white/5 w-full">
+                           <p className="text-[8px] font-bold text-red-600 uppercase tracking-widest italic">Documento Auditado</p>
+                           <p className="text-[6px] font-black text-slate-700 uppercase">Sistema v2.0</p>
+                        </div>
                      </div>
-                  </div>
-
-                  <div className="bg-slate-50 px-8 py-4 text-center border-t border-slate-100">
-                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Documento Digital Auditado v2.0</p>
                   </div>
                </div>
 
                {/* Botones de Acción */}
-               <div className="grid grid-cols-2 gap-4 mt-8">
+               <div className="grid grid-cols-2 gap-6 mt-8">
                   <button 
                     onClick={() => {
                       const input = document.getElementById('ticket-retiro');
                       if (!input) return;
                       html2canvas(input, { scale: 3 }).then((canvas) => {
                         const imgData = canvas.toDataURL('image/png');
-                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        // Formato landscape 'l'
+                        const pdf = new jsPDF('l', 'mm', 'a4');
                         const imgProps = pdf.getImageProperties(imgData);
                         const pdfWidth = pdf.internal.pageSize.getWidth();
                         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                         pdf.save(`Ticket_Despacho_${currentTicket.id}.pdf`);
-                        toast.success('PDK Descargado');
+                        toast.success('Ticket descargado correctamente');
                       });
                     }}
-                    className="py-4 bg-white text-slate-900 rounded-[2rem] font-black uppercase italic text-[10px] tracking-widest shadow-xl flex items-center justify-center space-x-2"
+                    className="py-5 bg-white text-slate-900 rounded-[2rem] font-black uppercase italic text-xs tracking-widest shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all"
                   >
-                    <ArrowUpRight className="w-4 h-4" />
-                    <span>Bajar PDF</span>
+                    <ArrowUpRight className="w-5 h-5 text-red-600" />
+                    <span>Descargar PDF</span>
                   </button>
                   <button 
                     onClick={() => setShowTicket(false)}
-                    className="py-4 bg-red-600 text-white rounded-[2rem] font-black uppercase italic text-[10px] tracking-widest shadow-xl"
+                    className="py-5 bg-red-600 text-white rounded-[2rem] font-black uppercase italic text-xs tracking-widest shadow-2xl active:scale-95 transition-all"
                   >
-                    Entendido
+                    Cerrar
                   </button>
                </div>
             </motion.div>
