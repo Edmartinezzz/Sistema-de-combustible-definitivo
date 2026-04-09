@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
     // --- EJECUCIÓN (Transaccional) ---
     // 1. Registrar Retiro
-    const { error: insertError } = await supabaseAdmin.from('retiros').insert([{
+    const { data: insertedData, error: insertError } = await supabaseAdmin.from('retiros').insert([{
       cliente_id,
       litros: cantidadNum,
       placa: placa || cliente.placa,
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       tipo_combustible,
       fecha: new Date().toISOString().split('T')[0], // Solo la fecha YYYY-MM-DD
       hora: new Date().toLocaleTimeString('en-US', { hour12: false }) // Formato HH:MM:SS
-    }]);
+    }]).select().single();
 
     if (insertError) {
       console.error('Error al insertar retiro:', insertError);
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     
     if (invError) throw invError;
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, retiro: insertedData });
 
   } catch (error: any) {
     return NextResponse.json({ error: 'Error al procesar el despacho' }, { status: 500 });
