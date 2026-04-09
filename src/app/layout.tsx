@@ -28,41 +28,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="es">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-      </head>
-      <body className={inter.className}>
-        <ThemeProvider>
-          <QueryProvider>
-            <AuthProvider>
               <ClienteAuthProvider>
-                <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 relative flex flex-col md:flex-row">
-                  {/* Navegación para Escritorio (Sidebar) */}
-                  <div className="hidden md:block">
-                    <SidebarWrapper />
-                  </div>
+                <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 relative flex flex-col">
+                  {/* Contenido Principal - Sin barras laterales ni superiores redundantes */}
+                  <main className="flex-1 mx-auto w-full max-w-7xl px-4 md:px-6 py-6 pb-32 md:pb-24 transition-all">
+                    {children}
+                  </main>
 
-                  <div className="flex-1 flex flex-col min-w-0">
-                    {/* Barra Superior para Escritorio */}
-                    <div className="hidden md:block">
-                      <Topbar />
-                    </div>
-
-                    {/* Botón de tema flotante (Oculto en móvil por solicitud del usuario) */}
-                    <div className="hidden md:block fixed top-4 right-4 z-50 md:right-8">
-                      <ThemeToggleButton />
-                    </div>
-
-                    {/* Contenido Principal con espacio para BottomNav en móvil */}
-                    <main className="flex-1 mx-auto w-full max-w-7xl px-4 md:px-6 py-6 pb-24 md:pb-8 transition-all">
-                      {children}
-                    </main>
-                  </div>
-
-                  {/* Navegación para Móvil (Barra Inferior) */}
+                  {/* Única Navegación Unificada (BottomNav) */}
                   <BottomNav />
                 </div>
                 <Toaster position="top-right" />
