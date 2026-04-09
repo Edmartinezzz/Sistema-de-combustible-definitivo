@@ -77,11 +77,12 @@ export async function POST(request: Request) {
     // 1. Registrar Retiro
     await supabaseAdmin.from('retiros').insert([{
       cliente_id,
-      cantidad: cantidadNum,
+      litros: cantidadNum,
       placa: placa || cliente.placa,
-      registrado_por: decoded.nombre || 'Autogestión',
+      usuario_id: 1, // ID del administrador por defecto para autogestión
       tipo_combustible,
-      fecha: new Date().toISOString()
+      fecha: new Date().toISOString().split('T')[0], // Solo la fecha YYYY-MM-DD
+      hora: new Date().toLocaleTimeString('en-US', { hour12: false }) // Formato HH:MM:SS
     }]);
 
     // 2. Actualizar Cliente

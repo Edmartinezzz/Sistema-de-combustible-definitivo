@@ -205,7 +205,7 @@ export default function PortalBeneficiario() {
                      </div>
                      <div className="flex flex-col items-end">
                         <span className={`text-lg font-black italic tracking-tighter ${retiro.tipo_combustible === 'Gasolina' ? 'text-red-600' : 'text-slate-900'}`}>
-                          -{retiro.cantidad} <span className="text-[10px] uppercase">GL</span>
+                          -{retiro.litros} <span className="text-[10px] uppercase">GL</span>
                         </span>
                      </div>
                   </div>

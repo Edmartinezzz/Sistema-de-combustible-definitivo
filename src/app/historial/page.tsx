@@ -109,7 +109,7 @@ export default function HistorialPage() {
                   </div>
                   <div>
                     <p className="text-4xl font-black text-red-600 tracking-tighter italic">
-                      -{retiro.cantidad} <span className="text-sm font-black opacity-40 uppercase">GL</span>
+                      -{retiro.litros} <span className="text-sm font-black opacity-40 uppercase">GL</span>
                     </p>
                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mt-1 italic">Operador: {retiro.registrado_por}</p>
                   </div>
