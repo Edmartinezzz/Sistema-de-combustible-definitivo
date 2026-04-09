@@ -18,7 +18,7 @@ export default function BottomNav() {
   if (hideOn.includes(pathname || '')) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe">
       <div className="mx-4 mb-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-800 shadow-2xl rounded-2xl flex items-center justify-around p-3 transition-colors duration-300">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
