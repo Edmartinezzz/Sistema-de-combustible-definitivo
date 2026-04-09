@@ -3,8 +3,14 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { ejecutarResetDiario } from '@/lib/resetDiario';
 
 // POST: Ejecutar el reset diario
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    // Seguridad: Validar Token de Vercel Cron
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     const ejecutado = await ejecutarResetDiario();
 
     return NextResponse.json({
