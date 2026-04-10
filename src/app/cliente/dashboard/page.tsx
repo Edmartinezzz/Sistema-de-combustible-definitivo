@@ -6,7 +6,7 @@ import { FiDroplet, FiClock, FiCalendar, FiUser, FiLogOut, FiPlusCircle, FiAlert
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import TicketModal from '@/components/TicketModal';
 import InventarioAgotadoModal from '@/components/InventarioAgotadoModal';
 import dynamic from 'next/dynamic';
@@ -33,14 +33,19 @@ export default function ClienteDashboard() {
   const [subclienteSeleccionadoId, setSubclienteSeleccionadoId] = useState<number | null>(null);
   const esInstitucional = true;
 
-  // Obtener datos frescos del cliente desde el backend
+  // Obtener datos frescos del cliente desde Supabase
   const { refetch: refetchCliente } = useQuery({
     queryKey: ['cliente-data', cliente?.id],
     queryFn: async () => {
       if (!cliente?.id) return null;
       try {
-        const { data } = await api.get(`/api/clientes/${cliente.id}`);
-        // Actualizar el contexto y localStorage con datos frescos
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('*')
+          .eq('id', cliente.id)
+          .single();
+        
+        if (error) throw error;
         updateCliente(data);
         return data;
       } catch (error) {
@@ -49,7 +54,7 @@ export default function ClienteDashboard() {
       }
     },
     enabled: !!cliente?.id,
-    refetchInterval: 60000, // Refrescar cada 60 segundos
+    refetchInterval: 60000,
   });
 
   // Obtener agendamientos del cliente
@@ -58,7 +63,13 @@ export default function ClienteDashboard() {
     queryFn: async () => {
       if (!cliente?.id) return [];
       try {
-        const { data } = await api.get(`/api/agendamientos/cliente/${cliente.id}`);
+        const { data, error } = await supabase
+          .from('agendamientos')
+          .select('*')
+          .eq('cliente_id', cliente.id)
+          .order('fecha_creacion', { ascending: false });
+        
+        if (error) throw error;
         return data;
       } catch (error) {
         console.error('Error al obtener agendamientos:', error);
@@ -66,16 +77,21 @@ export default function ClienteDashboard() {
       }
     },
     enabled: !!cliente?.id,
-    refetchInterval: 30000, // Actualizar cada 30 segundos
+    refetchInterval: 30000,
   });
 
-  // Obtener subclientes del cliente padre (solo para clientes institucionales)
+  // Obtener subclientes
   const { data: subclientes = [], refetch: refetchSubclientes } = useQuery({
     queryKey: ['subclientes-cliente', cliente?.id],
     queryFn: async () => {
       if (!cliente?.id || !esInstitucional) return [];
       try {
-        const { data } = await api.get(`/api/clientes/${cliente.id}/subclientes`);
+        const { data, error } = await supabase
+          .from('subclientes')
+          .select('*')
+          .eq('parent_id', cliente.id);
+        
+        if (error) throw error;
         return data;
       } catch (error) {
         console.error('Error al obtener subclientes:', error);
@@ -86,47 +102,37 @@ export default function ClienteDashboard() {
     refetchInterval: 30000,
   });
 
-  // Litros disponibles del cliente institucional para asignar a nuevos trabajadores
-  const litrosMesGasolinaPadre = (cliente?.litros_mes_gasolina ?? cliente?.litros_mes ?? 0) as number;
-  const litrosMesGasoilPadre = (cliente?.litros_mes_gasoil ?? 0) as number;
-
-  const litrosAsignadosGasolinaSub = esInstitucional
-    ? (subclientes as any[]).reduce(
-      (sum, sub) => sum + (sub.litros_mes_gasolina || 0),
-      0
-    )
-    : 0;
-
-  const litrosAsignadosGasoilSub = esInstitucional
-    ? (subclientes as any[]).reduce(
-      (sum, sub) => sum + (sub.litros_mes_gasoil || 0),
-      0
-    )
-    : 0;
-
-  const litrosDisponiblesParaSubGasolina = Math.max(
-    litrosMesGasolinaPadre - litrosAsignadosGasolinaSub,
-    0
-  );
-
-  const litrosDisponiblesParaSubGasoil = Math.max(
-    litrosMesGasoilPadre - litrosAsignadosGasoilSub,
-    0
-  );
-
   // Obtener estado del inventario
   const { data: estadoInventario, refetch: refetchInventario } = useQuery({
     queryKey: ['inventario-estado'],
     queryFn: async () => {
       try {
-        const { data } = await api.get('/api/inventario/estado');
-        return data;
+        const { data, error } = await supabase
+          .from('inventario')
+          .select('*');
+        
+        if (error) throw error;
+        
+        const invObj: any = {};
+        data.forEach(item => {
+          invObj[item.tipo_combustible] = item.litros_disponibles;
+        });
+
+        const { data: config } = await supabase
+          .from('sistema_config')
+          .select('retiros_bloqueados')
+          .single();
+
+        return { 
+          inventario: invObj, 
+          disponible: !config?.retiros_bloqueados 
+        };
       } catch (error) {
         console.error('Error al obtener estado del inventario:', error);
         return { inventario: {}, disponible: false };
       }
     },
-    refetchInterval: 10000, // Actualizar cada 10 segundos
+    refetchInterval: 10000,
   });
 
   const handleAgendar = async (e: React.FormEvent) => {
@@ -137,7 +143,6 @@ export default function ClienteDashboard() {
       return;
     }
 
-    // Verificar si hay inventario disponible para el tipo seleccionado
     const inventarioTipo = estadoInventario?.inventario?.[tipoCombustible] || 0;
     if (!estadoInventario?.disponible || inventarioTipo <= 0) {
       setTipoCombustibleAgotado(tipoCombustible);
@@ -147,13 +152,11 @@ export default function ClienteDashboard() {
 
     const litrosNum = parseFloat(litros);
 
-    // Si el cliente es institucional, debe seleccionar un subcliente para agendar a nombre de un trabajador
     if (esInstitucional && (!subclienteSeleccionadoId || subclienteSeleccionadoId === 0)) {
       toast.error('Seleccione un trabajador para agendar el retiro');
       return;
     }
 
-    // Verificar litros disponibles del cliente según el tipo de combustible
     const litrosDisponiblesTipo = tipoCombustible === 'gasolina'
       ? (cliente?.litros_disponibles_gasolina ?? cliente?.litros_disponibles ?? 0)
       : (cliente?.litros_disponibles_gasoil ?? cliente?.litros_disponibles ?? 0);
@@ -166,33 +169,49 @@ export default function ClienteDashboard() {
     try {
       setIsLoading(true);
 
-      // Debug: Mostrar datos que se van a enviar
-      console.log('📤 Enviando agendamiento:', {
-        cliente_id: cliente?.id,
-        tipo_combustible: tipoCombustible,
-        litros: litrosNum,
-        cliente_completo: cliente
-      });
+      const ticketCodigo = Math.floor(1000 + Math.random() * 9000).toString();
+      const fechaManana = new Date();
+      fechaManana.setDate(fechaManana.getDate() + 1);
+      fechaManana.setHours(5, 0, 0, 0);
 
-      // Llamar a la API para crear el agendamiento
-      const response = await api.post('/api/agendamientos', {
-        cliente_id: cliente?.id,
-        tipo_combustible: tipoCombustible,
-        litros: litrosNum,
-        subcliente_id: esInstitucional ? subclienteSeleccionadoId : null,
-      });
+      // 1. Crear agendamiento
+      const { data: newAgendamiento, error: insertError } = await supabase
+        .from('agendamientos')
+        .insert({
+          cliente_id: cliente.id,
+          tipo_combustible: tipoCombustible,
+          litros: litrosNum,
+          subcliente_id: esInstitucional ? subclienteSeleccionadoId : null,
+          codigo_ticket: ticketCodigo,
+          fecha_agendada: fechaManana.toISOString(),
+          estado: 'pendiente',
+          fecha_creacion: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-      console.log('📥 Respuesta del servidor:', response.data);
+      if (insertError) throw insertError;
 
-      const { codigo_ticket, fecha_agendada } = response.data;
+      // 2. Restar del cupo del cliente (esto debería ser una transacción/RPC idealmente)
+      const fieldToUpdate = tipoCombustible === 'gasolina' ? 'litros_disponibles_gasolina' : 'litros_disponibles_gasoil';
+      const { error: updateError } = await supabase
+        .from('clientes')
+        .update({ [fieldToUpdate]: litrosDisponiblesTipo - litrosNum })
+        .eq('id', cliente.id);
 
-      // NO actualizar manualmente - dejar que refetchCliente obtenga datos del backend
-      // El backend ya dedujo los litros, solo necesitamos refrescar
+      if (updateError) throw updateError;
 
-      // Preparar datos del ticket para el modal
+      // 3. Restar del inventario general
+      const { error: invError } = await supabase
+        .from('inventario')
+        .update({ litros_disponibles: inventarioTipo - litrosNum })
+        .eq('tipo_combustible', tipoCombustible);
+
+      if (invError) throw invError;
+
       const ticketInfo = {
-        codigo_ticket,
-        fecha_agendada,
+        codigo_ticket: ticketCodigo,
+        fecha_agendada: fechaManana.toISOString(),
         litros: litrosNum,
         tipo_combustible: tipoCombustible,
         cliente: {
@@ -207,41 +226,17 @@ export default function ClienteDashboard() {
           : null,
       };
 
-      // Mostrar modal del ticket
       setTicketData(ticketInfo);
       setShowTicketModal(true);
-
-      // Verificar si el inventario se agotó
-      if (response.data.inventario_restante <= 0) {
-        setTimeout(() => {
-          setTipoCombustibleAgotado(tipoCombustible);
-          setShowInventarioAgotado(true);
-        }, 2000); // Mostrar después de 2 segundos para que vea el ticket primero
-      }
-
       setLitros('');
-      refetchAgendamientos(); // Actualizar lista de agendamientos
+      
+      refetchAgendamientos();
+      refetchCliente();
+      refetchInventario();
 
-      // Esperar un momento para que el backend procese, luego refrescar datos
-      setTimeout(() => {
-        refetchCliente(); // Actualizar datos del cliente desde el backend
-      }, 500); // 500ms de delay
     } catch (error: any) {
       console.error('Error al crear agendamiento:', error);
-      const errorMsg = error.response?.data?.error || 'Error al crear el agendamiento';
-
-      if (error.response?.data?.limite) {
-        const { limite, agendado, disponible } = error.response.data;
-        toast.error(
-          `Límite diario excedido!\n` +
-          `Límite: ${limite}L\n` +
-          `Ya agendado: ${agendado}L\n` +
-          `Disponible: ${disponible}L`,
-          { duration: 6000 }
-        );
-      } else {
-        toast.error(errorMsg);
-      }
+      toast.error('Error al procesar el agendamiento. Intente de nuevo.');
     } finally {
       setIsLoading(false);
     }

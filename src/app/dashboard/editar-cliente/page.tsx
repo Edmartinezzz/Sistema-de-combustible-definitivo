@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
@@ -16,15 +16,16 @@ import {
   Car,
   Key,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-export default function EditarClientePage() {
+function EditarClienteContent() {
   const router = useRouter();
-  const params = useParams();
-  const clienteId = params.id;
+  const searchParams = useSearchParams();
+  const clienteId = searchParams.get('id');
   
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -47,6 +48,8 @@ export default function EditarClientePage() {
     fetchEntidades();
     if (clienteId) {
       fetchCliente();
+    } else {
+      setLoadingData(false);
     }
   }, [clienteId]);
 
@@ -77,7 +80,7 @@ export default function EditarClientePage() {
       });
     } catch (error) {
       toast.error('Error al cargar los datos del cliente');
-      router.push('/clientes');
+      router.push('/dashboard/clientes');
     } finally {
       setLoadingData(false);
     }
@@ -94,7 +97,7 @@ export default function EditarClientePage() {
     try {
       await axios.put(`/api/clientes/${clienteId}`, formData);
       toast.success('Beneficiario actualizado con éxito');
-      router.push('/clientes');
+      router.push('/dashboard/clientes');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Error al actualizar');
     } finally {
@@ -103,7 +106,22 @@ export default function EditarClientePage() {
   };
 
   if (loadingData) {
-    return <div className="h-96 flex items-center justify-center font-black text-slate-400 italic">CARGANDO DATOS DEL BENEFICIARIO...</div>;
+    return (
+      <div className="h-96 flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+        <p className="font-black text-slate-400 italic uppercase">CARGANDO DATOS DEL BENEFICIARIO...</p>
+      </div>
+    );
+  }
+
+  if (!clienteId) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center space-y-4 text-center p-6">
+        <AlertCircle className="w-16 h-16 text-red-600" />
+        <h2 className="text-2xl font-black text-slate-900 uppercase italic">ID de Beneficiario No Encontrado</h2>
+        <button onClick={() => router.back()} className="text-slate-500 font-bold uppercase underline">Volver atrás</button>
+      </div>
+    );
   }
 
   return (
@@ -300,5 +318,18 @@ export default function EditarClientePage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function EditarClientePage() {
+  return (
+    <Suspense fallback={
+      <div className="h-96 flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+        <p className="font-black text-slate-400 italic uppercase">CARGANDO...</p>
+      </div>
+    }>
+      <EditarClienteContent />
+    </Suspense>
   );
 }

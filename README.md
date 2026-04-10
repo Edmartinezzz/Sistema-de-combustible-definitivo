@@ -1,72 +1,62 @@
-# Despacho Gas
+# Despacho Gas+
 
-Plataforma de Despacho Inteligente de Gas. Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL. API integrada en rutas de Next. Wrapper configurable para WhatsApp Business API.
+Plataforma Premium de Despacho Inteligente de Gas. Sistema bimonetario con gestión de cuotas de combustible (Gasolina/Gasoil) y portal de beneficiarios.
 
-## Requisitos
-- Node.js 18+
-- PostgreSQL 14+
+## 🚀 Stack Tecnológico
+- **Frontend**: Next.js 16 (App Router) con TypeScript y TailwindCSS.
+- **Backend/API**: Next.js Route Handlers (ubicados en `src/server_logic/_api`).
+- **Base de Datos**: Supabase (PostgreSQL) con Supabase JS SDK.
+- **App Móvil**: Capacitor (Android Nativo).
+- **Despliegue**: Vercel.
 
-## Configuración
-1. Copia variables de entorno:
-   - Crea `.env.local` en la raíz con:
-```
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?schema=public"
-WHATSAPP_API_BASE_URL="https://graph.facebook.com/v20.0"
-WHATSAPP_TOKEN="<token>"
-WHATSAPP_PHONE_NUMBER_ID="<phone_number_id>"
-```
-2. Instalar dependencias:
-```
-npm install
-```
-3. Generar Prisma e inicializar BD:
-```
-npx prisma generate
-npx prisma migrate dev --name init
-npm run prisma:seed
-```
-4. Ejecutar en desarrollo:
-```
-npm run dev
-```
+## 🛠️ Configuración Local
 
-## Vistas
-- Portal público (`/`): crear pedido sin login.
-- Admin (`/admin`): filtrar por sector, listar pedidos, asignar repartidor.
-- Repartidor (`/driver`): ver entregas asignadas y actualizar estado.
+1. **Instalar Dependencias**:
+   ```bash
+   npm install
+   ```
 
-## API principal
-- POST `/api/orders`: crear pedido público.
-- GET `/api/admin/sectors`: listar sectores.
-- GET `/api/admin/drivers`: listar repartidores.
-- GET `/api/admin/orders`: listar pedidos.
-- POST `/api/admin/assign`: asignar pedido a repartidor (crea/actualiza `Delivery`).
-- GET `/api/driver/deliveries`: entregas (demo sin auth).
-- PATCH `/api/driver/deliveries/[id]/status`: actualizar estado entrega.
+2. **Variables de Entorno**:
+   Crea un archivo `.env.local` con las siguientes claves:
+   ```env
+   DATABASE_URL="tu_url_de_pooler_supabase"
+   SUPABASE_URL="tu_url_supabase"
+   SUPABASE_ANON_KEY="tu_anon_key"
+   SUPABASE_SERVICE_ROLE_KEY="tu_service_role_key"
+   SECRET_KEY="tu_clave_secreta_jwt"
+   ```
 
-## WhatsApp Business API
-El wrapper `src/lib/whatsapp.ts` usa variables de entorno y no envía mensajes si no hay configuración.
+3. **Ejecutar en Desarrollo**:
+   ```bash
+   npm run dev
+   ```
 
-## Despliegue
-### Vercel (Web)
-1. Importa el repositorio en Vercel.
-2. Configura variables de entorno (mismas que `.env.local`).
-3. Deploy.
+## 📱 Compilación Android (Capacitor)
 
-### Railway (Base de datos PostgreSQL)
-1. Crea un proyecto PostgreSQL en Railway.
-2. Copia la URL como `DATABASE_URL` en Vercel.
-3. Ejecuta migraciones desde local o CI:
-```
-npx prisma migrate deploy
-```
+Para generar el APK de la aplicación:
+1. Generar el build estático:
+   ```bash
+   npm run build
+   ```
+2. Sincronizar con el proyecto Android:
+   ```bash
+   npx cap sync
+   ```
+3. Abrir en Android Studio para generar el APK firmado:
+   ```bash
+   npx cap open android
+   ```
 
-## Scripts útiles
-- `npm run dev`: desarrollo
-- `npm run build` / `npm start`: producción
-- `npm run prisma:generate` / `npm run prisma:migrate` / `npm run prisma:seed`
+## 📁 Estructura del Proyecto
+- `src/app`: Páginas y layouts de Next.js (Admin y Cliente).
+- `src/server_logic/_api`: Lógica interna de la API (Auth, Clientes, Retiros).
+- `src/contexts`: Contextos de React para autenticación persistente.
+- `android/`: Código fuente nativo de la app Android.
+
+## 📄 Documentación Adicional
+- [Guía de Despliegue en Vercel](file:///c:/Users/Usuario/Desktop/Despacho%20gas+/despacho-gas/GUIA_DESPLIEGUE_VERCEL.md)
+- [Documentación de Base de Datos](file:///c:/Users/Usuario/Desktop/Despacho%20gas+/despacho-gas/DOCUMENTACION_DATABASE.md)
+- [Fix de Reset de Litros](file:///c:/Users/Usuario/Desktop/Despacho%20gas+/despacho-gas/GUIA_FIX_DATABASE.md)
 
 ## Licencia
 MIT
-
-

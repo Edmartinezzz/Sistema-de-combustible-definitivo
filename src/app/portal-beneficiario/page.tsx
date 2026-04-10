@@ -376,7 +376,7 @@ export default function PortalBeneficiario() {
                      <div className="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-[2.5rem] shadow-xl text-center min-w-[200px]">
                         <div className="p-3 bg-white rounded-2xl shadow-2xl">
                            <QRCodeCanvas 
-                              value={`${window.location.origin}/verificar-ticket/${currentTicket.id}`} 
+                              value={`${window.location.origin}/verificar-ticket?id=${currentTicket.id}`} 
                               size={120}
                               level="H"
                            />

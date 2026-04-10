@@ -8,7 +8,7 @@ import BackButton from '@/components/ui/BackButton';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import Tooltip from '@/components/ui/Tooltip';
-import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 type Inventario = {
   id: number;
@@ -37,25 +37,31 @@ export default function InventarioPage() {
 
   const cargarInventario = async () => {
     try {
-      const [inventarioRes, historialRes] = await Promise.all([
-        api.get('/api/inventario'),
-        api.get('/api/inventario/historial')
-      ]);
+      // 1. Obtener inventario actual por tipo
+      const { data: invData, error: invError } = await supabase
+        .from('inventario')
+        .select('*');
       
-      // Calcular litros disponibles por tipo de combustible
+      if (invError) throw invError;
+      
+      // 2. Obtener historial detallado
+      const { data: histData, error: histError } = await supabase
+        .from('inventario_historial')
+        .select('*')
+        .order('fecha_ingreso', { ascending: false });
+      
+      if (histError) throw histError;
+      
       const resumen: InventarioResumen = { gasoil: 0, gasolina: 0 };
-      if (inventarioRes.data && Array.isArray(inventarioRes.data)) {
-        inventarioRes.data.forEach((item: any) => {
-          if (item.tipo_combustible === 'gasoil') {
-            resumen.gasoil = item.litros_disponibles || 0;
-          } else if (item.tipo_combustible === 'gasolina') {
-            resumen.gasolina = item.litros_disponibles || 0;
-          }
+      if (invData) {
+        invData.forEach((item: any) => {
+          if (item.tipo_combustible === 'gasoil') resumen.gasoil = item.litros_disponibles || 0;
+          if (item.tipo_combustible === 'gasolina') resumen.gasolina = item.litros_disponibles || 0;
         });
       }
       
       setInventario(resumen);
-      setHistorial(historialRes.data);
+      setHistorial(histData || []);
     } catch (error) {
       console.error('Error al cargar el inventario:', error);
       toast.error('Error al cargar el inventario');
@@ -74,17 +80,38 @@ export default function InventarioPage() {
       return;
     }
     
-    if (!tipoCombustible || !['gasoil', 'gasolina'].includes(tipoCombustible)) {
-      toast.error('Seleccione un tipo de combustible válido');
-      return;
-    }
-
     try {
       setIsLoading(true);
-      await api.post('/api/inventario', {
-        litros_ingresados: parseFloat(litros),
+      const litrosNum = parseFloat(litros);
+
+      // 1. Obtener registro actual del tanque
+      const { data: currentInv } = await supabase
+        .from('inventario')
+        .select('*')
+        .eq('tipo_combustible', tipoCombustible)
+        .single();
+
+      const nuevosLitros = (currentInv?.litros_disponibles || 0) + litrosNum;
+
+      // 2. Actualizar inventario
+      const { error: updateError } = await supabase
+        .from('inventario')
+        .update({ 
+          litros_disponibles: nuevosLitros,
+          litros_ingresados: (currentInv?.litros_ingresados || 0) + litrosNum,
+          fecha_ingreso: new Date().toISOString()
+        })
+        .eq('tipo_combustible', tipoCombustible);
+
+      if (updateError) throw updateError;
+
+      // 3. Registrar en historial
+      await supabase.from('inventario_historial').insert({
+        litros_ingresados: litrosNum,
+        litros_disponibles: nuevosLitros,
         tipo_combustible: tipoCombustible,
-        observaciones
+        observaciones,
+        fecha_ingreso: new Date().toISOString()
       });
       
       toast.success('Inventario actualizado correctamente');
@@ -93,25 +120,37 @@ export default function InventarioPage() {
       cargarInventario();
     } catch (error: any) {
       console.error('Error al actualizar inventario:', error);
-      toast.error(error.response?.data?.error || 'Error al actualizar el inventario');
+      toast.error('Error al actualizar el inventario');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!confirm('¿Está seguro de que desea resetear todo el inventario a 0 litros? Esta acción no se puede deshacer.')) {
+    if (!confirm('¿Está seguro de que desea resetear todo el inventario a 0 litros?')) {
       return;
     }
 
     try {
       setIsLoading(true);
-      await api.post('/api/inventario/reset');
-      toast.success('Inventario reseteado a 0 litros');
+      await supabase.from('inventario').update({ 
+        litros_disponibles: 0,
+        litros_ingresados: 0 
+      }).neq('id', 0); // Resetear todos
+
+      await supabase.from('inventario_historial').insert({
+        litros_ingresados: 0,
+        litros_disponibles: 0,
+        tipo_combustible: 'reset',
+        observaciones: 'Reseteo general de inventario',
+        fecha_ingreso: new Date().toISOString()
+      });
+
+      toast.success('Inventario reseteado');
       cargarInventario();
     } catch (error: any) {
-      console.error('Error al resetear inventario:', error);
-      toast.error(error.response?.data?.error || 'Error al resetear el inventario');
+      console.error('Error al resetear:', error);
+      toast.error('Error al resetear el inventario');
     } finally {
       setIsLoading(false);
     }

@@ -123,7 +123,7 @@ export default function ClientesPage() {
                     </td>
                     <td className="px-10 py-8 text-right">
                        <div className="flex items-center justify-end space-x-2">
-                          <button onClick={() => router.push(`/dashboard/editar-cliente/${cliente.id}`)} className="p-3 text-slate-900 hover:text-red-600 transition-all flex items-center justify-center bg-slate-100 rounded-full"><Edit2 className="w-5 h-5" /></button>
+                          <button onClick={() => router.push(`/dashboard/editar-cliente?id=${cliente.id}`)} className="p-3 text-slate-900 hover:text-red-600 transition-all flex items-center justify-center bg-slate-100 rounded-full"><Edit2 className="w-5 h-5" /></button>
                           <button className="p-3 text-slate-900 hover:text-red-600 transition-all flex items-center justify-center bg-slate-100 rounded-full"><MoreVertical className="w-5 h-5" /></button>
                        </div>
                     </td>

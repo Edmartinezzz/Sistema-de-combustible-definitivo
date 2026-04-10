@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   CheckCircle2, 
@@ -18,16 +18,23 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-export default function VerificarTicketPage() {
-  const params = useParams();
+function TicketContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTicket = async () => {
+      if (!id) {
+        setError('No se proporcionó un ID de ticket válido');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await axios.get(`/api/retiros/${params.id}`);
+        const res = await axios.get(`/api/retiros/${id}`);
         setData(res.data);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Error al consultar el ticket');
@@ -36,8 +43,8 @@ export default function VerificarTicketPage() {
       }
     };
 
-    if (params.id) fetchTicket();
-  }, [params.id]);
+    fetchTicket();
+  }, [id]);
 
   if (loading) {
     return (
@@ -54,7 +61,7 @@ export default function VerificarTicketPage() {
         <AlertCircle className="w-20 h-20 text-red-600 mb-6" />
         <h1 className="text-3xl font-black text-slate-900 italic uppercase tracking-tighter mb-4">Ticket Inválido</h1>
         <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-8 leading-loose">
-          Este comprobante no existe en nuestra base de datos o ha sido revocado.
+          {error || 'Este comprobante no existe en nuestra base de datos o ha sido revocado.'}
         </p>
         <a href="/" className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase italic text-xs tracking-widest">
           Volver al Inicio
@@ -169,5 +176,18 @@ export default function VerificarTicketPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VerificarTicketPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
+        <Loader2 className="w-12 h-12 animate-spin text-red-600 mb-4" />
+        <p className="font-black italic uppercase tracking-widest text-xs">Cargando...</p>
+      </div>
+    }>
+      <TicketContent />
+    </Suspense>
   );
 }

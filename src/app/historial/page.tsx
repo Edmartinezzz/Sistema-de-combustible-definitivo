@@ -111,7 +111,7 @@ export default function HistorialPage() {
 
       // QR Code
       try {
-        const qrUrl = `${window.location.origin}/verificar-ticket/${r.id}`;
+        const qrUrl = `${window.location.origin}/verificar-ticket?id=${r.id}`;
         const qrDataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 100 });
         doc.addImage(qrDataUrl, 'PNG', x + 55, y + 15, 30, 30);
       } catch (err) {

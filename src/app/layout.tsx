@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import React from 'react';
 import SidebarWrapper from '../components/layout/SidebarWrapper';
 import Topbar from '../components/layout/Topbar';
-import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ClienteAuthProvider } from '@/contexts/ClienteAuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
@@ -14,7 +13,7 @@ import { Analytics } from '@vercel/analytics/next';
 
 import BottomNav from '@/components/layout/BottomNav';
 
-const inter = Inter({ subsets: ['latin'] });
+
 
 export const metadata: Metadata = {
   title: 'Despacho Gas+',
@@ -34,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </head>
-      <body className={inter.className}>
+      <body className="antialiased font-sans">
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>

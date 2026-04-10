@@ -12,7 +12,7 @@ import {
   Zap,
   Droplet
 } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '@/lib/supabase';
 import {
   AreaChart,
   Area,
@@ -44,16 +44,25 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cRes, iRes, dRes] = await Promise.all([
-          axios.get('/api/clientes'),
-          axios.get('/api/inventario'),
-          axios.get('/api/retiros')
+        // Consultas directas a Supabase (No requieren servidor Node.js)
+        const [
+          { count: clientesCount }, 
+          { data: invData }, 
+          { data: retirosData }
+        ] = await Promise.all([
+          supabase.from('clientes').select('*', { count: 'exact', head: true }),
+          supabase.from('inventario').select('*'),
+          supabase.from('retiros').select('*, clientes(nombre)').order('created_at', { ascending: false }).limit(5)
         ]);
+
+        const gasolina = invData?.find((i: any) => i.tipo_combustible === 'Gasolina');
+        const gasoil = invData?.find((i: any) => i.tipo_combustible === 'Gasoil');
+
         setStats({
-          clientes: cRes.data.length,
-          gasolina: iRes.data.gasolina,
-          gasoil: iRes.data.gasoil,
-          despachosRecientes: dRes.data.slice(0, 5)
+          clientes: clientesCount || 0,
+          gasolina,
+          gasoil,
+          despachosRecientes: retirosData || []
         });
       } catch (error) {
         console.error('Error dashboard data:', error);

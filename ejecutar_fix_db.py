@@ -1,5 +1,5 @@
 """
-Script para ejecutar SQL en la base de datos de Render/Railway
+Script para ejecutar SQL en la base de datos PostgreSQL (Supabase/Render/etc.)
 Version sin emojis para evitar problemas de encoding
 """
 
