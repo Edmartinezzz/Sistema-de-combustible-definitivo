@@ -10,7 +10,10 @@ import {
   Truck,
   History,
   User,
-  LogOut
+  LogOut,
+  Zap,
+  Plus,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClienteAuth } from '@/contexts/ClienteAuthContext';
@@ -20,18 +23,21 @@ export default function BottomNav() {
   const { isAdmin, logout: adminLogout, isAuthenticated: isAdminAuth } = useAuth();
   const { cliente, logout: clienteLogout } = useClienteAuth();
 
-  // Opciones para el Administrador (Dueño)
+  // Opciones para el Administrador (Dueño) - Sincronizado con DashboardLayout (7 items)
   const adminItems = [
-    { label: 'Panel', icon: LayoutDashboard, path: '/admin' },
-    { label: 'Inventario', icon: Fuel, path: '/admin/inventario' },
-    { label: 'Clientes', icon: Users, path: '/admin/clientes' },
-    { label: 'Repartidor', icon: Truck, path: '/driver' },
+    { label: 'Resumen', icon: LayoutDashboard, path: '/dashboard' },
+    { label: 'Reserva', icon: Fuel, path: '/dashboard/combustible' },
+    { label: 'Entidades', icon: Building2, path: '/dashboard/entidades' },
+    { label: 'Clientes', icon: Users, path: '/clientes' },
+    { label: 'Despacho', icon: Zap, path: '/dashboard/despacho' },
+    { label: 'Nuevo', icon: Plus, path: '/dashboard/registrar-cliente' },
+    { label: 'Historia', icon: History, path: '/historial' },
   ];
 
   // Opciones para el Beneficiario (Cliente)
   const clienteItems = [
     { label: 'Resumen', icon: LayoutDashboard, path: '/portal-beneficiario' },
-    { label: 'Historial', icon: History, path: '/portal-beneficiario' }, // El historial está integrado en la misma página por ahora
+    { label: 'Historial', icon: History, path: '/portal-beneficiario' },
     { label: 'Perfil', icon: User, path: '/portal-beneficiario' },
   ];
 
