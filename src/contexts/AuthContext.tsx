@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
 type User = {
-  id: number;
-  usuario: string;
+  id: string | number;
   nombre: string;
-  es_admin: boolean;
+  rol: 'admin' | 'cliente';
 };
 
 type AuthContextType = {
@@ -44,11 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (usuario: string, contrasena: string) => {
     try {
-      const { data } = await api.post('/api/login', { usuario, contrasena });
+      const { data } = await api.post('/api/auth/login', { usuario, contrasena });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.usuario));
       setUser(data.usuario);
-      router.push('/dashboard');
+      
+      if (data.usuario.rol === 'admin') {
+        router.push('/dashboard');
+      } else {
+        router.push('/portal-beneficiario');
+      }
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
       const message = error?.message || 'Error al iniciar sesión';
@@ -71,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         loading,
         isAuthenticated: !!user,
-        isAdmin: user?.es_admin || false,
+        isAdmin: user?.rol === 'admin',
       }}
     >
       {!loading && children}
