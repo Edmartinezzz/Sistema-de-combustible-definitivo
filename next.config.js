@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
+  output: process.env.VERCEL ? undefined : 'export',
   images: {
     unoptimized: true,
     remotePatterns: [
