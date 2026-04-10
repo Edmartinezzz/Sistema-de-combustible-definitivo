@@ -4,6 +4,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Error: Supabase URL o Anon Key no configuradas en el entorno.');
+}
+
 // Cliente estándar para operaciones desde el navegador (si aplica)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
