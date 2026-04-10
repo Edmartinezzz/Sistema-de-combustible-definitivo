@@ -5,19 +5,23 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Error: Supabase URL o Anon Key no configuradas en el entorno.');
+  console.error('❌ ERROR CRÍTICO: Supabase URL o Anon Key no configuradas.');
+  console.info('Asegúrate de configurar NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.');
 }
 
-// Cliente estándar para operaciones desde el navegador (si aplica)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Cliente estándar para operaciones desde el navegador
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null as any;
 
-// Cliente de administración (Service Role) para el backend (API Routes)
-// Este cliente TIENE permisos para saltarse las RLS si es necesario en el login
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Cliente de administración (Solo servidor/API)
+export const supabaseAdmin = (supabaseUrl && supabaseServiceKey)
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null as any;
 
 export type SupabaseClient = typeof supabase;
