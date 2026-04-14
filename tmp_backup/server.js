@@ -12,6 +12,7 @@ const reportesRoutes = require('./routes/reportes.routes');
 const confirmacionesRoutes = require('./routes/confirmaciones.routes');
 const empresasRoutes = require('./routes/empresas.routes');
 const sistemaRoutes = require('./routes/sistema.routes');
+const mineralesRoutes = require('./routes/minerales.routes');
 const currencyService = require('./services/currencyService');
 
 const app = express();
@@ -52,6 +53,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ===== RUTAS API =====
 app.use('/api/auth', authRoutes);
+app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/guias', guiasRoutes);
 app.use('/api/pagos', pagosRoutes);
 app.use('/api/reportes', reportesRoutes);
@@ -59,6 +61,7 @@ app.use('/api/confirmaciones', confirmacionesRoutes);
 app.use('/api/tracking', require('./routes/tracking.routes'));
 app.use('/api/empresas', empresasRoutes);
 app.use('/api/sistema', sistemaRoutes);
+app.use('/api/minerales', mineralesRoutes);
 app.use('/api/stats', require('./routes/stats.routes'));
 
 // ===== RUTA DE SALUD =====

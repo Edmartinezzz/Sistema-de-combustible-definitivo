@@ -180,8 +180,27 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Tipo de Mineral *</label>
-                        <select name="tipo_mineral" id="tipo_mineral" class="form-control" required>
-                            <option value="">Cargando minerales...</option>
+                        <select name="tipo_mineral" class="form-control" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Piedra Picada">Piedra Picada</option>
+                            <option value="Arrocillo">Arrocillo</option>
+                            <option value="Arena 2&quot;">Arena 2"</option>
+                            <option value="Arena 2/4">Arena 2/4</option>
+                            <option value="Arena 5&quot;">Arena 5"</option>
+                            <option value="Agregado 4/8">Agregado 4/8</option>
+                            <option value="Agregado 8/15">Agregado 8/15</option>
+                            <option value="Agregado 5/15">Agregado 5/15</option>
+                            <option value="Agregado 15/25">Agregado 15/25</option>
+                            <option value="Arena Integral">Arena Integral</option>
+                            <option value="Granzón">Granzón</option>
+                            <option value="P100">P100</option>
+                            <option value="P3000">P3000</option>
+                            <option value="Coraza">Coraza</option>
+                            <option value="Arena Cernida">Arena Cernida</option>
+                            <option value="Canto Rodado">Canto Rodado</option>
+                            <option value="Polvillo">Polvillo</option>
+                            <option value="Arena Amarilla">Arena Amarilla</option>
+                            <option value="Otros">Otros</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -285,35 +304,6 @@
             alert('No hay sesión activa. Por favor, inicie sesión.');
             window.close();
         }
-
-        // Cargar minerales dinámicamente
-        async function cargarMinerales() {
-            const select = document.getElementById('tipo_mineral');
-            try {
-                const response = await fetch(`${API_BASE}/minerales`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                const data = await response.json();
-                
-                if (data.success && data.minerales) {
-                    select.innerHTML = '<option value="">Seleccione...</option>';
-                    data.minerales.forEach(m => {
-                        const option = document.createElement('option');
-                        option.value = m.nombre;
-                        option.textContent = m.nombre;
-                        select.appendChild(option);
-                    });
-                } else {
-                    select.innerHTML = '<option value="">Error al cargar minerales</option>';
-                }
-            } catch (error) {
-                console.error('Error cargando minerales:', error);
-                select.innerHTML = '<option value="">Error de conexión</option>';
-            }
-        }
-
-        // Inicializar
-        cargarMinerales();
 
         // Función para mostrar alertas
         function showAlert(message, type = 'success') {

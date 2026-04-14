@@ -1,75 +1,72 @@
-// Configuración de API Dinámica para Previews y Producción
-let API_BASE = '';
-if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000' && window.location.port !== '8080')) {
-    // Si corre desde Android APK (file://) usamos la URL de producción
-    API_BASE = 'https://sistema-de-gu-a-de-minerales.vercel.app/api';
-} else {
-    // Si corre en la web (Vercel Prod, Vercel Previews, Localhost), usamos el origen relativo
-    API_BASE = window.location.origin + '/api';
-}
+// Variablse globales heredadas para compatibilidad
 let currentUser = null;
 let authToken = null;
-let tasaBCV = 36.50; // Tasa por defecto
-let systemConfig = {
-    modulo_pagos_habilitado: 'false'
-};
-
-// Variable global para el escáner
-let html5QrCode = null;
+let tasaBCV = window.CONFIG.TASA_BCV_DEFAULT;
+let systemConfig = { modulo_pagos_habilitado: 'false' };
 
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', async () => {
-    // Verificar si hay token guardado
-    authToken = localStorage.getItem('authToken');
-
-    if (authToken) {
-        // Cargar configuración solo si hay token
+    // Sincronizar variables globales legacy con AuthService
+    const session = await window.AuthService.verifySession();
+    
+    if (session) {
+        currentUser = window.currentUser;
+        authToken = window.authToken;
+        // Cargar configuración inicial
         await Promise.all([
-            refreshTasaBCV(),
-            refreshSystemConfig()
+            window.refreshTasaBCV ? window.refreshTasaBCV() : Promise.resolve(),
+            window.refreshSystemConfig ? window.refreshSystemConfig() : Promise.resolve()
         ]);
-        verifyToken();
+        window.showPage('dashboard-page');
+        window.loadDashboard();
     } else {
-        showPage('login-page');
+        window.showPage('login-page');
     }
 
     // Event Listeners
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
-    document.getElementById('logout-btn').addEventListener('click', handleLogout);
-
-    // QR Scanner Listeners
-    const btnScan = document.getElementById('btn-scan-qr');
-    if (btnScan) btnScan.addEventListener('click', startScanner);
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.addEventListener('submit', handleLoginRefactored);
     
-    const btnStopScan = document.getElementById('btn-stop-scan');
-    if (btnStopScan) btnStopScan.addEventListener('click', stopScanner);
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => window.AuthService.logout());
 
-    // Notification Toggle
-    const notifBtn = document.getElementById('notification-btn');
-    if (notifBtn) {
-        notifBtn.addEventListener('click', toggleNotifications);
-    }
-
-    // Close notifications on click outside
-    document.addEventListener('click', (e) => {
-        const popover = document.getElementById('notification-popover');
-        const btn = document.getElementById('notification-btn');
-        if (popover && popover.classList.contains('active') && btn && !popover.contains(e.target) && !btn.contains(e.target)) {
-            popover.classList.remove('active');
-        }
-    });
-
-    // Navigation handlers
+    // Navigation and other listeners...
     setupNavigation();
-
-    // Mobile menu toggle
+    
     const menuToggle = document.getElementById('menu-toggle');
-    if (menuToggle) {
-        menuToggle.addEventListener('click', toggleSidebar);
-    }
+    if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
 });
 
-// ===== NAVEGACIÓN =====
+async function handleLoginRefactored(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('login-error');
+
+    errorDiv.style.display = 'none';
+    window.UIUtils.showLoading(true);
+
+    try {
+        await window.AuthService.login(username, password);
+        currentUser = window.currentUser;
+        authToken = window.authToken;
+        
+        window.showPage('dashboard-page');
+        window.loadDashboard();
+    } catch (error) {
+        errorDiv.textContent = error.message || 'Error al iniciar sesión';
+        errorDiv.style.display = 'block';
+    } finally {
+        window.UIUtils.showLoading(false);
+    }
+}
+
+// Redefinir funciones legacy para que usen los nuevos servicios
+function showLoading(show) { window.UIUtils.showLoading(show); }
+function formatNumber(num) { return window.UIUtils.formatNumber(num); }
+function formatNumeroGuia(num, letra) { return window.UIUtils.formatNumeroGuia(num, letra); }
+function getEstadoBadge(est) { return window.UIUtils.getEstadoBadge(est); }
+
 function setupNavigation() {
     // Observer for dynamically added links
     const navContainer = document.getElementById('sidebar-nav');
@@ -168,6 +165,17 @@ function renderSidebar(role) {
                         <line x1="23" y1="11" x2="17" y2="11" />
                     </svg>
                     <span>Crear Empresa</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-section="minerales">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    <span>Gestión de Minerales</span>
                 </a>
             </div>
             
@@ -287,7 +295,8 @@ function updateBreadcrumb(section) {
         'pagos': 'Pagos',
         'deudas': 'Deudas y Recargos',
         'historial': 'Historial',
-        'admin': 'Administración'
+        'admin': 'Administración',
+        'minerales': 'Gestión de Minerales'
     };
 
     breadcrumb.innerHTML = `
@@ -367,6 +376,13 @@ function loadSectionContent(section) {
         case 'usuarios':
             if (currentUser.role === 'master') {
                 renderUsuarios(content);
+            } else {
+                content.innerHTML = '<div class="error-message">Acceso denegado</div>';
+            }
+            break;
+        case 'minerales':
+            if (currentUser.role === 'master') {
+                renderMinerales(content);
             } else {
                 content.innerHTML = '<div class="error-message">Acceso denegado</div>';
             }
@@ -485,41 +501,7 @@ async function handleLogout() {
 
 // ===== DASHBOARD =====
 async function loadDashboard() {
-    // Si es empresa_destinataria, cargar su página específica
-    if (currentUser.role === 'empresa_destinataria') {
-        loadConfirmacionPage();
-        return;
-    }
-
-    // Asegurar que sidebar y header estén visibles (pueden haberse ocultado)
-    const sidebar = document.getElementById('sidebar');
-    const header = document.querySelector('.top-header');
-    const mobileNav = document.querySelector('.mobile-nav');
-    if (sidebar) sidebar.style.display = '';
-    if (header) header.style.display = '';
-    if (mobileNav) mobileNav.style.display = '';
-
-    // Update user info in sidebar
-    const avatar = document.getElementById('user-avatar');
-    const username = document.getElementById('sidebar-username');
-    const role = document.getElementById('sidebar-role');
-
-    if (avatar && username && role) {
-        avatar.textContent = currentUser.username.charAt(0).toUpperCase();
-        username.textContent = currentUser.username;
-        role.textContent = currentUser.role === 'master' ? 'Administrador' : currentUser.empresa_nombre;
-    }
-
-    // Render sidebar based on role
-    renderSidebar(currentUser.role);
-
-    const dashboardContent = document.getElementById('dashboard-content');
-
-    if (currentUser.role === 'master') {
-        await loadMasterDashboard(dashboardContent);
-    } else {
-        await loadEmpresaDashboard(dashboardContent);
-    }
+    await window.DashboardSection.load();
 }
 
 async function loadMasterDashboard(container) {
@@ -1730,19 +1712,23 @@ function updateNotificationBadge(count) {
 }
 
 
-// ===== FUNCIONES DE GUÍAS =====
-// Lista de materiales disponibles
-const MATERIALES_DISPONIBLES = [
-    'Piedra Picada', 'Arrocillo', 'Arena 2"', 'Arena 2/4', 'Arena 5"',
-    'Agregado 4/8', 'Agregado 8/15', 'Agregado 5/15', 'Agregado 15/25',
-    'Arena Integral', 'Granzón', 'P100', 'P3000', 'Coraza',
-    'Arena Cernida', 'Canto Rodado', 'Polvillo', 'Arena Amarilla', 'Arena Lavada', 'Otros'
-];
+// Lista de materiales disponibles (cargada dinámicamente desde API)
+window.DYNAMIC_MINERALS = [];
 
-function mostrarFormularioGuia() {
-    const materialesOptions = MATERIALES_DISPONIBLES.map(m =>
-        `<option value="${m}">${m}</option>`
-    ).join('');
+async function mostrarFormularioGuia() {
+    showLoading(true);
+    
+    try {
+        const response = await apiRequest('/minerales');
+        if (response.success && response.minerales) {
+            window.DYNAMIC_MINERALS = response.minerales;
+        }
+    } catch (e) {
+        console.error("Error cargando minerales para formulario", e);
+        window.DYNAMIC_MINERALS = [];
+    } finally {
+        showLoading(false);
+    }
 
     const modalHtml = `
         <div class="modal-overlay" id="guia-modal-overlay" onclick="cerrarModalGuia()">
@@ -1909,7 +1895,9 @@ function mostrarFormularioGuia() {
     document.getElementById('modal-container').innerHTML = modalHtml;
 
     // Agregar la primera fila de material automáticamente
-    agregarFilaMaterial();
+    setTimeout(() => {
+        agregarFilaMaterial();
+    }, 100);
 }
 
 function cerrarModalGuia() {
@@ -3076,9 +3064,11 @@ function agregarFilaMaterial() {
 
     const rowId = 'material-row-' + Date.now();
 
-    const materialesOptions = MATERIALES_DISPONIBLES.map(m =>
-        `<option value="${m}">${m}</option>`
-    ).join('');
+    const mineralesActivos = window.DYNAMIC_MINERALS ? window.DYNAMIC_MINERALS.filter(m => m.activo) : [];
+    
+    const materialesOptions = mineralesActivos.length > 0 
+        ? mineralesActivos.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('')
+        : '<option value="">Sin minerales disponibles</option>';
 
     const row = document.createElement('div');
     row.id = rowId;
@@ -4499,5 +4489,169 @@ async function purgarSistema() {
         Swal.fire('Error', error.message, 'error');
     } finally {
         showLoading(false);
+    }
+}
+
+/**
+ * Gestión de Minerales (Solo para Master)
+ */
+async function renderMinerales(container) {
+    showLoading(true);
+    try {
+        const response = await apiRequest('/minerales/admin');
+        const minerales = response.minerales;
+
+        container.innerHTML = `
+            <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <div>
+                    <h1 class="dashboard-title">💎 Gestión de Minerales</h1>
+                    <p class="dashboard-subtitle">Administre los tipos de minerales disponibles en el sistema</p>
+                </div>
+                <button class="btn btn-primary" onclick="mostrarModalAgregarMineral()">
+                    <span>➕</span> Agregar Nuevo Mineral
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Listado de Minerales</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre del Mineral</th>
+                                <th>Estado</th>
+                                <th>Fecha de Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${minerales.map(m => `
+                                <tr>
+                                    <td style="font-weight: 600;">${m.nombre}</td>
+                                    <td>
+                                        <span class="status-badge ${m.activo ? 'status-active' : 'status-expired'}">
+                                            ${m.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </td>
+                                    <td>${formatDate(m.created_at)}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="btn btn-sm ${m.activo ? 'btn-secondary' : 'btn-success'}" 
+                                                    onclick="toggleEstadoMineral('${m.id}', ${!m.activo})" 
+                                                    style="padding: 4px 10px; font-size: 11px;">
+                                                ${m.activo ? 'Desactivar' : 'Activar'}
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" 
+                                                    onclick="eliminarMineralUI('${m.id}', '${m.nombre}')" 
+                                                    style="padding: 4px 10px; font-size: 11px;">
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                            ${minerales.length === 0 ? '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #888;">No hay minerales registrados.</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error al cargar minerales:', error);
+        container.innerHTML = '<div class="error-message">Error al cargar la lista de minerales.</div>';
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function mostrarModalAgregarMineral() {
+    const { value: nombre } = await Swal.fire({
+        title: 'Agregar Nuevo Mineral',
+        input: 'text',
+        inputLabel: 'Nombre del mineral',
+        inputPlaceholder: 'Ej: Arena Lavada, Canto Rodado...',
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Mineral',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) return 'El nombre es obligatorio';
+        }
+    });
+
+    if (nombre) {
+        showLoading(true);
+        try {
+            const response = await apiRequest('/minerales', 'POST', { nombre });
+            if (response.success) {
+                Swal.fire('¡Éxito!', 'Mineral agregado correctamente', 'success');
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(response.error);
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message || 'No se pudo agregar el mineral', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+async function toggleEstadoMineral(id, nuevoEstado) {
+    const action = nuevoEstado ? 'activar' : 'desactivar';
+    const confirm = await Swal.fire({
+        title: `¿Desea ${action} este mineral?`,
+        text: `El mineral ${nuevoEstado ? 'volverá a aparecer' : 'ya no aparecerá'} en el formulario de solicitud.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: `Sí, ${action}`,
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (confirm.isConfirmed) {
+        showLoading(true);
+        try {
+            const response = await apiRequest(`/minerales/${id}`, 'PUT', { activo: nuevoEstado });
+            if (response.success) {
+                Swal.fire('Actualizado', `Mineral ${nuevoEstado ? 'activado' : 'desactivado'} correctamente`, 'success');
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(response.error);
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message || 'No se pudo actualizar el estado', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+async function eliminarMineralUI(id, nombre) {
+    const confirm = await Swal.fire({
+        title: '¿Eliminar mineral?',
+        text: `Esta acción intentará borrar el mineral "${nombre}". Solo se puede eliminar si nunca ha sido utilizado en una guía.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (confirm.isConfirmed) {
+        showLoading(true);
+        try {
+            const response = await apiRequest(`/minerales/${id}`, 'DELETE');
+            if (response.success) {
+                Swal.fire('Eliminado', 'El mineral ha sido borrado del sistema.', 'success');
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(response.error);
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message || 'No se pudo eliminar el mineral', 'error');
+        } finally {
+            showLoading(false);
+        }
     }
 }

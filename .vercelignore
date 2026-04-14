@@ -1,0 +1,11 @@
+uploads/
+database/*.sqlite
+.env
+.git
+node_modules
+README.md
+LICENSE
+.github
+*.log
+tmp/
+C:/Users/Usuario/.gemini/antigravity/brain/*

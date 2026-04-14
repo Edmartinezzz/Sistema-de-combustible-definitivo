@@ -1,9 +1,17 @@
 {
-  "framework": "nextjs",
-  "crons": [
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/verificar/(.*)", "destination": "/api" }
+  ],
+  "headers": [
     {
-      "path": "/api/sistema/reset",
-      "schedule": "0 6 * * *"
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" }
+      ]
     }
   ]
 }
