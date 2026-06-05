@@ -93,6 +93,16 @@ async function generateGuiaPDF(guiaData) {
                 align: 'right'
             });
 
+            // Hora de generación (Justo debajo del número de guía)
+            if (guiaData.fecha_emision) {
+                doc.fontSize(10).font('Helvetica-Bold').fillColor('#000000');
+                const horaGeneracion = formatTime(guiaData.fecha_emision);
+                doc.text(`Hora: ${horaGeneracion}`, codigoGuiaX, codigoGuiaY + 36, {
+                    width: codigoWidth,
+                    align: 'right'
+                });
+            }
+
             y += 55;
 
             // Línea separadora
@@ -251,12 +261,13 @@ async function generateGuiaPDF(guiaData) {
                 const cantidad = item.cantidad;
                 const unidad = item.unidad;
                 
-                const tasaBcv = parseFloat(guiaData.tasa_bcv || 1);
+                const tasaBcv = parseFloat(guiaData.tasa_bcv) || 1;
                 
                 // El Total Bs debe calcularse matemáticamente desde el USD: (Cantidad * Precio USD) * Tasa BCV
                 const precioParsedUSD = parseFloat(item.precio_unitario);
                 const precioUnidadUSD = isNaN(precioParsedUSD) ? 0 : precioParsedUSD;
-                const totalUSD = cantidad * precioUnidadUSD;
+                const cantMaterial = parseFloat(item.cantidad) || 0;
+                const totalUSD = cantMaterial * precioUnidadUSD;
                 const totalItemBS = totalUSD * tasaBcv;
 
                 // Para la columna visual de Precio Unitario Bs, usamos el valor ingresado o calculamos el fallback
@@ -283,7 +294,7 @@ async function generateGuiaPDF(guiaData) {
                         doc.text(precioUnidadBS.toLocaleString('es-VE', { minimumFractionDigits: 2 }), materialX + 163, mY + 2, { width: 54, align: 'center' });
                     }
                     
-                    doc.text(totalItemBS.toLocaleString('es-VE', { minimumFractionDigits: 2 }), materialX + 223, mY + 2, { width: 49, align: 'center' });
+                    doc.text((totalItemBS || 0).toLocaleString('es-VE', { minimumFractionDigits: 2 }), materialX + 223, mY + 2, { width: 49, align: 'center' });
                 }
 
                 mY += rowHeight;
@@ -291,14 +302,14 @@ async function generateGuiaPDF(guiaData) {
 
             // Fila TOTALES (Simplificada: Solo mostrar el monto final que es el 100% del valor)
             const rowHeightTotal = 13;
-            const montoPagarBS = parseFloat(guiaData.monto_pagar || 0);
-            const montoRecargoBS = parseFloat(guiaData.monto_recargo || 0);
+            const montoPagarBS = parseFloat(guiaData.monto_pagar) || 0;
+            const montoRecargoBS = parseFloat(guiaData.monto_recargo) || 0;
             const totalFinalBS = montoPagarBS + montoRecargoBS;
-            const tasa_bcv = parseFloat(guiaData.tasa_bcv || 1);
+            const tasa_bcv = parseFloat(guiaData.tasa_bcv) || 1;
 
             // Lógica para detectar si monto_usd es el total (100%) o solo el impuesto (2.5% legacy)
-            let totalUSD = parseFloat(guiaData.monto_usd || 0);
-            const montoPagarUsdEquiv = montoPagarBS / tasa_bcv;
+            let totalUSD = parseFloat(guiaData.monto_usd) || 0;
+            const montoPagarUsdEquiv = tasa_bcv > 0 ? montoPagarBS / tasa_bcv : 0;
 
             // Si el monto en USD guardado es muy pequeño comparado con el monto en Bolívares al cambio,
             // es porque era una guía vieja que solo guardaba el 2.5% en 'monto_usd'.
@@ -314,7 +325,7 @@ async function generateGuiaPDF(guiaData) {
             doc.rect(materialX + 140, mY, 60, rowHeightTotal).stroke('#000');
             doc.rect(materialX + 200, mY, 75, rowHeightTotal).stroke('#000');
             doc.fontSize(9).font('Helvetica-Bold').fillColor('#FFFFFF').text('TOTAL A PAGAR', materialX + 5, mY + 3);
-            doc.fillColor('#000000').text(`Bs. ${totalFinalBS.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, materialX + 200, mY + 3, { width: 75, align: 'center' });
+            doc.fillColor('#000000').text(`Bs. ${(totalFinalBS || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, materialX + 200, mY + 3, { width: 75, align: 'center' });
             mY += rowHeightTotal;
 
             if (montoRecargoBS > 0) {
@@ -457,22 +468,75 @@ function drawLabelValue(doc, x, y, width, label, value) {
 function formatDateShort(date) {
     if (!date) return '';
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    if (isNaN(d.getTime())) return '';
+    try {
+        const formatter = new Intl.DateTimeFormat('es-VE', {
+            timeZone: 'America/Caracas',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        return formatter.format(d);
+    } catch (e) {
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
 }
 
 function formatDate(date) {
     if (!date) return 'N/A';
     const d = new Date(date);
-    return d.toLocaleDateString('es-VE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (isNaN(d.getTime())) return 'N/A';
+    try {
+        return d.toLocaleDateString('es-VE', {
+            timeZone: 'America/Caracas',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return d.toLocaleDateString('es-VE', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+/**
+ * Formatea la hora en formato HH:MM:SS
+ * @param {Date|String} date - Fecha a formatear
+ * @returns {String} Hora formateada
+ */
+function formatTime(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    
+    try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/Caracas',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+        return formatter.format(d);
+    } catch (e) {
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // La hora '0' debe ser '12'
+        
+        return `${hours}:${minutes} ${ampm}`;
+    }
 }
 
 module.exports = {

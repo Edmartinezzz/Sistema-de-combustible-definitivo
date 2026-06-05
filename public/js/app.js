@@ -170,6 +170,18 @@ function renderSidebar(role) {
                     <span>Crear Empresa</span>
                 </a>
             </div>
+
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-section="minerales">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l-5.5 9h11L12 2z"/>
+                        <path d="M6 11l-4 7h11l-7-7z"/>
+                        <path d="M18 11l4 7h-11l7-7z"/>
+                        <path d="M12 22v-4"/>
+                    </svg>
+                    <span>Gestión de Minerales</span>
+                </a>
+            </div>
             
             <div class="nav-divider" style="height: 1px; background: rgba(0,0,0,0.1); margin: 10px 0;"></div>
         `;
@@ -209,6 +221,12 @@ function renderSidebar(role) {
                 <a href="#" class="nav-link" data-section="solicitar">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                     <span>Solicitar Guía</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-section="directorios">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span>Directorios</span>
                 </a>
             </div>
             ${systemConfig.modulo_pagos_habilitado === 'true' ? `
@@ -287,7 +305,8 @@ function updateBreadcrumb(section) {
         'pagos': 'Pagos',
         'deudas': 'Deudas y Recargos',
         'historial': 'Historial',
-        'admin': 'Administración'
+        'admin': 'Administración',
+        'minerales': 'Gestión de Minerales'
     };
 
     breadcrumb.innerHTML = `
@@ -295,7 +314,7 @@ function updateBreadcrumb(section) {
             <a href="#" onclick="navigateToSection('inicio'); return false;">Inicio</a>
         </div>
         ${section !== 'inicio' ? `
-            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-separator">â€º</span>
             <div class="breadcrumb-item">
                 <span>${sectionNames[section] || section}</span>
             </div>
@@ -352,6 +371,13 @@ function loadSectionContent(section) {
                 content.innerHTML = '<div class="error-message">Acceso denegado</div>';
             }
             break;
+        case 'minerales':
+            if (currentUser.role === 'master') {
+                renderMinerales(content);
+            } else {
+                content.innerHTML = '<div class="error-message">Acceso denegado</div>';
+            }
+            break;
         case 'chofer':
             loadChoferMode(content);
             break;
@@ -363,6 +389,13 @@ function loadSectionContent(section) {
             break;
         case 'deudas':
             loadDeudasSection(content);
+            break;
+        case 'directorios':
+            if (currentUser.role === 'empresa') {
+                renderDirectorios(content);
+            } else {
+                content.innerHTML = '<div class="error-message">Acceso denegado</div>';
+            }
             break;
         case 'usuarios':
             if (currentUser.role === 'master') {
@@ -547,7 +580,7 @@ async function loadMasterDashboard(container) {
         container.innerHTML = `
             <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
                 <div>
-                    <h1 class="dashboard-title">Panel de Administración</h1>
+                    <h1 class="dashboard-title">🏢 Panel de Administración</h1>
                     <p class="dashboard-subtitle">Control de minerales del Estado La Guaira</p>
                     <button class="btn btn-danger btn-sm" onclick="purgarSistema()" style="margin-top: 10px; background: #dc3545; border: none; font-weight: 600; padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
@@ -574,7 +607,7 @@ async function loadMasterDashboard(container) {
                 <div class="stat-card stat-primary">
                     <div class="stat-header">
                         <h3 class="stat-title">Empresas Activas</h3>
-                        <div class="stat-icon">🏢</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value">${stats.empresas_activas}</div>
                     <div class="stat-change">Empresas registradas</div>
@@ -584,7 +617,7 @@ async function loadMasterDashboard(container) {
                 <div class="stat-card stat-warning">
                     <div class="stat-header">
                         <h3 class="stat-title">Pagos Pendientes</h3>
-                        <div class="stat-icon">⏳</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value">${stats.pagos_pendientes}</div>
                     <div class="stat-change">Pendientes de verificación</div>
@@ -594,7 +627,7 @@ async function loadMasterDashboard(container) {
                 <div class="stat-card stat-info">
                     <div class="stat-header">
                         <h3 class="stat-title">Guías Este Mes</h3>
-                        <div class="stat-icon">📄</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value">${stats.guias_mes}</div>
                     <div class="stat-change">Guías emitidas</div>
@@ -604,7 +637,7 @@ async function loadMasterDashboard(container) {
                 <div class="stat-card stat-success" id="income-stat-card" onclick="mostrarDetalleIngresos()" style="cursor: pointer; position: relative; transition: all 0.3s ease;">
                     <div class="stat-header">
                         <h3 class="stat-title" id="income-stat-title">Ingresos del Mes</h3>
-                        <div class="stat-icon">💰</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value" id="income-stat-value">Bs. ${formatNumber(stats.ingresos_mes)}</div>
                     <div class="stat-change" id="income-stat-footer">Ver desglose detallado</div>
@@ -668,7 +701,7 @@ async function loadMasterDashboard(container) {
                     </table>
                     </div>
                 </div>
-            ` : '<div class="info-message">✓ No hay pagos pendientes de verificación.</div>'}
+            ` : '<div class="info-message">âœ“ No hay pagos pendientes de verificación.</div>'}
 
             <div class="card">
                 <div class="card-header">
@@ -713,7 +746,7 @@ async function loadMasterDashboard(container) {
                                                 <button class="btn btn-warning btn-sm" onclick="marcarUsada('${guia.id}')" style="padding: 4px 8px; font-size: 11px;">Usada</button>
                                                 <button class="btn btn-danger btn-sm" onclick="anularGuia('${guia.id}')" style="padding: 4px 8px; font-size: 11px;">Anular</button>
                                             ` : ''}
-                                            <button class="btn btn-sm" onclick="eliminarGuia('${guia.id}', '${guia.numero_guia}')" style="padding: 4px 8px; font-size: 11px; background: #2c2c2c; color: white; border: none; border-radius: 4px;">🗑️ Eliminar</button>
+                                            <button class="btn btn-sm" onclick="eliminarGuia('${guia.id}', '${guia.numero_guia}')" style="padding: 4px 8px; font-size: 11px; background: #2c2c2c; color: white; border: none; border-radius: 4px;">ðŸ—‘ï¸ Eliminar</button>
                                             ${systemConfig.modulo_pagos_habilitado === 'true' && pendiente > 0 ? `
                                                 <button class="btn btn-primary btn-sm" onclick="exonerarGuia('${guia.id}')" style="padding: 4px 8px; font-size: 11px; background: #6f42c1;">Exonerar</button>
                                             ` : ''}
@@ -771,11 +804,11 @@ async function loadChoferMode(container) {
     if (!guiaActiva) {
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">🚚 Modo Chofer</h1>
+                <h1 class="dashboard-title">ðŸšš Modo Chofer</h1>
             </div>
             <div class="card">
                 <div class="card-body text-center" style="padding: 40px;">
-                    <h3>⛔ No tienes ninguna guía ACTIVA</h3>
+                    <h3>â›” No tienes ninguna guía ACTIVA</h3>
                     <p>Necesitas una guía con pago verificado y estado 'activa' para iniciar el rastreo.</p>
                     <button class="btn btn-primary mt-3" onclick="navigateToSection('guias')">Ver mis guías</button>
                 </div>
@@ -786,13 +819,13 @@ async function loadChoferMode(container) {
 
     container.innerHTML = `
         <div class="dashboard-header">
-            <h1 class="dashboard-title">🚚 En Ruta</h1>
+            <h1 class="dashboard-title">ðŸšš En Ruta</h1>
             <p class="dashboard-subtitle">Guía ${formatNumeroGuia(guiaActiva.numero_guia)} - ${guiaActiva.tipo_mineral}</p>
         </div>
 
         <div class="card">
             <div class="card-body text-center" style="padding: 40px;">
-                <div id="tracking-status-icon" style="font-size: 64px; margin-bottom: 20px;">⭕</div>
+                <div id="tracking-status-icon" style="font-size: 64px; margin-bottom: 20px;">â­•</div>
                 <h2 id="tracking-status-text">Esperando señal GPS...</h2>
                 <p class="text-muted">Por favor, mantén esta pantalla abierta durante todo el viaje.</p>
                 
@@ -837,7 +870,7 @@ function startTracking(guiaId) {
     btn.classList.remove('btn-success');
     btn.classList.add('btn-danger');
 
-    icon.textContent = "📡";
+    icon.textContent = "ðŸ“¡";
     text.textContent = "Buscando satélites...";
 
     // Solicitar permiso y watch
@@ -852,7 +885,7 @@ function startTracking(guiaId) {
             const { latitude, longitude, speed, accuracy } = position.coords;
 
             // Actualizar UI
-            icon.textContent = "🟢";
+            icon.textContent = "ðŸŸ¢";
             text.textContent = "TRANSMITIENDO UBICACIÓN";
             text.style.color = "#28a745";
 
@@ -871,7 +904,7 @@ function startTracking(guiaId) {
         },
         (error) => {
             console.error("Error GPS:", error);
-            icon.textContent = "⚠️";
+            icon.textContent = "âš ï¸";
             text.textContent = "Error de GPS: " + error.message;
             text.style.color = "#dc3545";
         },
@@ -899,7 +932,7 @@ function stopTracking() {
         btn.textContent = "REANUDAR VIAJE";
         btn.classList.add('btn-success');
         btn.classList.remove('btn-danger');
-        icon.textContent = "⭕";
+        icon.textContent = "â­•";
         text.textContent = "Transmisión detenida";
         text.style.color = "inherit";
     }
@@ -914,7 +947,7 @@ async function sendLocationUpdate(guiaId, lat, lng, speed, accuracy) {
             velocidad: speed,
             precision: accuracy
         });
-        console.log("📍 Ubicación enviada");
+        console.log("ðŸ“ Ubicación enviada");
     } catch (e) {
         console.error("Error enviando ubicación", e);
     }
@@ -925,10 +958,10 @@ async function loadMasterMap(container) {
     container.innerHTML = `
         <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h1 class="dashboard-title">🗺️ Monitor Satelital</h1>
+                <h1 class="dashboard-title">ðŸ—ºï¸ Monitor Satelital</h1>
                 <p class="dashboard-subtitle">Seguimiento en tiempo real</p>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="loadMasterMap(document.getElementById('dashboard-content'))">🔄 Actualizar</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadMasterMap(document.getElementById('dashboard-content'))">🔍„ Actualizar</button>
         </div>
         <div class="card" style="height: 600px; padding: 0; overflow: hidden;">
             <div id="map" style="width: 100%; height: 100%;"></div>
@@ -958,7 +991,7 @@ async function loadMasterMap(container) {
                         <strong>${pos.empresa}</strong><br>
                         Guía: ${formatNumeroGuia(pos.numero_guia)}<br>
                         Placa: ${pos.vehiculo_placa}<br>
-                        <small>🕒 ${new Date(pos.timestamp).toLocaleTimeString()}</small><br>
+                        <small>ðŸ•’ ${new Date(pos.timestamp).toLocaleTimeString()}</small><br>
                         <hr style="margin: 5px 0;">
                         <button class="btn btn-primary btn-sm" style="width: 100%" 
                             onclick="verDetalleGuiaMaster('${pos.guia_id}')">
@@ -1001,7 +1034,7 @@ async function loadDetalleGuiaMaster(guiaId) {
             <div class="dashboard-header">
                 <div>
                     <h1 class="dashboard-title">Detalle de Guía ${formatNumeroGuia(guia.numero_guia)}</h1>
-                    <button class="btn btn-outline btn-sm" onclick="loadMasterMap(document.getElementById('dashboard-content'))">⬅ Volver al Mapa</button>
+                    <button class="btn btn-outline btn-sm" onclick="loadMasterMap(document.getElementById('dashboard-content'))">â¬… Volver al Mapa</button>
                 </div>
             </div>
 
@@ -1034,7 +1067,7 @@ async function loadDetalleGuiaMaster(guiaId) {
                     <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 20px;">
                         ${guia.estado === 'activa' ? `
                             <button class="btn btn-danger btn-lg" onclick="cerrarGuiaRemoto('${guia.id}')">
-                                🛑 CONFIRMAR LLEGADA Y CERRAR
+                                ðŸ›‘ CONFIRMAR LLEGADA Y CERRAR
                             </button>
                         ` : ''}
                         <button class="btn btn-secondary" onclick="descargarGuia('${guia.id}')">Ver PDF</button>
@@ -1105,7 +1138,7 @@ async function loadEmpresaDashboard(container) {
                 <div class="stat-card stat-primary">
                     <div class="stat-header">
                         <h3 class="stat-title">Guías Solicitadas</h3>
-                        <div class="stat-icon">📄</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value">${guias.length}</div>
                     <div class="stat-change">Total de solicitudes</div>
@@ -1113,7 +1146,7 @@ async function loadEmpresaDashboard(container) {
                 <div class="stat-card stat-warning">
                     <div class="stat-header">
                         <h3 class="stat-title">Pendientes</h3>
-                        <div class="stat-icon">⏳</div>
+                        <div class="stat-icon">📊</div>
                     </div>
                     <div class="stat-value">${guiasPendientes}</div>
                     <div class="stat-change">Por pagar o verificar</div>
@@ -1134,7 +1167,7 @@ async function loadEmpresaDashboard(container) {
                                             <div class="guia-number" style="margin-bottom: 0;">${formatNumeroGuia(guia.numero_guia)}</div>
                                             ${guia.estado === 'activa' || guia.estado === 'pendiente_pago' || guia.estado === 'pago_pendiente_verificacion' ? `
                                                 <button class="btn btn-success btn-sm" onclick="descargarGuia('${guia.id}')" style="padding: 4px 10px; font-size: 11px; height: fit-content; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(52, 199, 89, 0.2);">
-                                                    <span style="font-size: 12px;">📥</span> PDF
+                                                    <span style="font-size: 12px;">ðŸ“¥</span> PDF
                                                 </button>
                                             ` : ''}
                                         </div>
@@ -1142,7 +1175,7 @@ async function loadEmpresaDashboard(container) {
                                     </div>
                                     <div class="guia-qr">
                                         <div style="font-size: 12px; text-align: center; color: #6c757d;">
-                                            📱<br>QR Code
+                                            ðŸ“±<br>QR Code
                                         </div>
                                     </div>
                                 </div>
@@ -1170,14 +1203,14 @@ async function loadEmpresaDashboard(container) {
                                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                         ${(parseFloat(guia.monto_pagado || 0) < (parseFloat(guia.monto_pagar) + parseFloat(guia.monto_recargo || 0))) ? `
                                             <button class="btn btn-primary btn-sm" onclick="subirComprobante('${guia.id}', ${(parseFloat(guia.monto_pagar) + parseFloat(guia.monto_recargo || 0)) - parseFloat(guia.monto_pagado || 0)})">
-                                                <span>💳</span> Pagar
+                                                <span>ðŸ’³</span> Pagar
                                             </button>
                                         ` : `
-                                            <span class="badge badge-success">✅ Pagada</span>
+                                            <span class="badge badge-success">âœ… Pagada</span>
                                         `}
 
                                         ${guia.estado === 'pago_pendiente_verificacion' ? `
-                                            <span class="badge badge-info">⏳ En Verificación</span>
+                                            <span class="badge badge-info">â³ En Verificación</span>
                                         ` : ''}
                                     </div>
                                 </div>
@@ -1217,13 +1250,30 @@ async function loadEmpresaDashboard(container) {
 }
 
 // ===== SECCIONES ADICIONALES =====
-async function loadGuiasSection(container) {
+async function loadGuiasSection(container, desde = '', hasta = '', empresa_id = '') {
     showLoading(true);
     try {
-        const guiasResponse = await apiRequest('/guias');
+        let endpoint = '/guias';
+        const params = new URLSearchParams();
+        if (desde) params.append('desde', desde);
+        if (hasta) params.append('hasta', hasta);
+        if (empresa_id) params.append('empresa_id', empresa_id);
+        
+        // Aumentamos el límite para ver todas las guías (ej. 1000)
+        params.append('limit', '1000');
+
+        if (params.toString()) {
+            endpoint += `?${params.toString()}`;
+        }
+        
+        const guiasResponse = await apiRequest(endpoint);
         const guias = guiasResponse.guias;
 
         if (currentUser.role === 'master') {
+            // Obtener lista de empresas para el filtro
+            const empresasResponse = await apiRequest('/empresas');
+            const listaEmpresas = empresasResponse.empresas || [];
+
             // VISTA ADMINISTRADOR (Agrupada por Empresa)
             const empresasMap = {};
             let deudaTotalFisica = 0;
@@ -1250,9 +1300,45 @@ async function loadGuiasSection(container) {
             });
 
             container.innerHTML = `
-                <div class="dashboard-header">
-                    <h1 class="dashboard-title">🏢 Gestión de Guías</h1>
-                    <p class="dashboard-subtitle">Visualización consolidada por empresas</p>
+                <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h1 class="dashboard-title">🏢 Gestión de Guías</h1>
+                        <p class="dashboard-subtitle">Visualización consolidada por empresas</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: flex-end; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap;">
+                        <div>
+                            <label style="font-size: 12px; font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Empresa:</label>
+                            <select id="filtro-empresa" class="form-control" style="padding: 6px 10px; font-size: 14px; min-width: 200px;">
+                                <option value="">Todas las empresas</option>
+                                ${listaEmpresas.map(e => `<option value="${e.id}" ${empresa_id === e.id ? 'selected' : ''}>${e.razon_social}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Desde:</label>
+                            <input type="date" id="filtro-desde" class="form-control" style="padding: 6px 10px; font-size: 14px;" value="${desde}">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Hasta:</label>
+                            <input type="date" id="filtro-hasta" class="form-control" style="padding: 6px 10px; font-size: 14px;" value="${hasta}">
+                        </div>
+                        <button class="btn btn-primary" onclick="filtrarGuiasAdmin()" style="padding: 6px 15px;">Filtrar</button>
+                        <button class="btn btn-secondary" onclick="descargarReporteGuiasAdmin()" style="padding: 6px 15px; background: #6c757d; border-color: #6c757d; display: flex; align-items: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Consolidado (PDF)
+                        </button>
+                        <button class="btn btn-secondary" onclick="descargarReporteGuiasAdminExcel()" style="padding: 6px 15px; background: #28a745; border-color: #28a745; display: flex; align-items: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Consolidado (Excel)
+                        </button>
+                        <button class="btn btn-secondary" onclick="descargarReporteDetalladoAdmin()" style="padding: 6px 15px; background: #1a5f7a; border-color: #1a5f7a; display: flex; align-items: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Detallado (PDF)
+                        </button>
+                        <button class="btn btn-secondary" onclick="descargarReporteDetalladoAdminExcel()" style="padding: 6px 15px; background: #007aff; border-color: #007aff; display: flex; align-items: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Detallado (Excel)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="stats-grid">
@@ -1260,7 +1346,7 @@ async function loadGuiasSection(container) {
                     <div class="stat-card stat-danger">
                         <div class="stat-header">
                             <span class="stat-title">DEUDA TOTAL POR COBRAR</span>
-                            <div class="stat-icon">💰</div>
+                            <div class="stat-icon">📊</div>
                         </div>
                         <div class="stat-value">Bs. ${formatNumber(deudaTotalFisica)}</div>
                         <div class="stat-change">Sumatoria de todas las empresas</div>
@@ -1269,7 +1355,7 @@ async function loadGuiasSection(container) {
                     <div class="stat-card stat-primary">
                         <div class="stat-header">
                             <span class="stat-title">EMPRESAS ACTIVAS</span>
-                            <div class="stat-icon">🏭</div>
+                            <div class="stat-icon">📊</div>
                         </div>
                         <div class="stat-value">${Object.keys(empresasMap).length}</div>
                         <div class="stat-change">Con guías generadas</div>
@@ -1319,10 +1405,17 @@ async function loadGuiasSection(container) {
                                                 ` : ''}
                                             </div>
                                         </div>
-                                        <div style="display: flex; gap: 6px;">
-                                            <button class="btn btn-outline btn-sm" onclick="descargarGuia('${guia.id}')" style="flex: 1; padding: 4px;">PDF</button>
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                            <button class="btn btn-outline btn-sm" onclick="descargarGuia('${guia.id}')" style="flex: 1; min-width: 45px; padding: 4px;">PDF</button>
+                                            ${currentUser.role === 'master' ? `
+                                                <button class="btn btn-danger btn-sm" onclick="eliminarGuia('${guia.id}', '${guia.numero_guia}')" style="flex: 1; min-width: 60px; padding: 4px; background: #CF142B; border-color: #CF142B; color: white;">Eliminar</button>
+                                                ${guia.estado === 'activa' ? `
+                                                    <button class="btn btn-warning btn-sm" onclick="anularGuia('${guia.id}')" style="flex: 1; min-width: 55px; padding: 4px; background: #FF9500; border-color: #FF9500; color: white;">Anular</button>
+                                                    <button class="btn btn-success btn-sm" onclick="marcarUsada('${guia.id}')" style="flex: 1; min-width: 55px; padding: 4px; background: #34C759; border-color: #34C759; color: white;">Usada</button>
+                                                ` : ''}
+                                            ` : ''}
                                             ${guia.estado === 'pago_pendiente_verificacion' ? `
-                                                <button class="btn btn-primary btn-sm" onclick="navigateToSection('pagos')" style="flex: 1; padding: 4px; background: #FF9500;">Ver Pago</button>
+                                                <button class="btn btn-primary btn-sm" onclick="navigateToSection('pagos')" style="flex: 1; padding: 4px; background: #007AFF;">Ver Pago</button>
                                             ` : ''}
                                         </div>
                                     </div>
@@ -1354,7 +1447,7 @@ async function loadGuiasSection(container) {
                                                 </div>
                                                 <div class="guia-qr" onclick="window.open('/verificar/${guia.id}', '_blank')" style="cursor: pointer;">
                                                     <div style="font-size: 12px; text-align: center; color: #6c757d;">
-                                                        📱<br>QR Code
+                                                        ðŸ“±<br>QR Code
                                                     </div>
                                                 </div>
                                             </div>
@@ -1376,21 +1469,21 @@ async function loadGuiasSection(container) {
                                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                                     ${guia.estado === 'activa' || guia.estado === 'pendiente_pago' || guia.estado === 'pago_pendiente_verificacion' ? `
                                                         <button class="btn btn-success btn-sm" onclick="descargarGuia('${guia.id}')">
-                                                            <span>📥</span> PDF
+                                                            <span>ðŸ“¥</span> PDF
                                                         </button>
                                                     ` : ''}
                                                     
                                                     ${systemConfig.modulo_pagos_habilitado === 'true' ? `
                                                         ${(parseFloat(guia.monto_pagado || 0) < (parseFloat(guia.monto_pagar) + parseFloat(guia.monto_recargo || 0))) ? `
                                                             <button class="btn btn-primary btn-sm" onclick="subirComprobante('${guia.id}', ${(parseFloat(guia.monto_pagar) + parseFloat(guia.monto_recargo || 0)) - parseFloat(guia.monto_pagado || 0)})">
-                                                                <span>💳</span> Pagar
+                                                                <span>ðŸ’³</span> Pagar
                                                             </button>
                                                         ` : `
-                                                            <span class="badge badge-success">✅ Pagada</span>
+                                                            <span class="badge badge-success">âœ… Pagada</span>
                                                         `}
 
                                                         ${guia.estado === 'pago_pendiente_verificacion' ? `
-                                                            <span class="badge badge-info">⏳ En Verificación</span>
+                                                            <span class="badge badge-info">â³ En Verificación</span>
                                                         ` : ''}
                                                     ` : ''}
                                                 </div>
@@ -1432,7 +1525,7 @@ async function loadGuiasSection(container) {
                         </div>
 
                         <div class="card" style="margin-top: 20px; border-left: 4px solid var(--system-orange); padding: 16px;">
-                            <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--system-orange);">ℹ️ Información Importante</h4>
+                            <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--system-orange);">â„¹ï¸ Información Importante</h4>
                             <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
                                 Las guías pueden descargarse de 8:00 AM a 6:00 PM. 
                                 <strong>Los pagos deben realizarse antes de las 6:00 PM</strong> para evitar recargos por retraso.
@@ -1451,6 +1544,186 @@ async function loadGuiasSection(container) {
     }
 }
 
+window.filtrarGuiasAdmin = function() {
+    const empresa_id = document.getElementById('filtro-empresa').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    const container = document.getElementById('dashboard-content');
+    loadGuiasSection(container, desde, hasta, empresa_id);
+};
+
+window.descargarReporteGuiasAdmin = function() {
+    const empresa_id = document.getElementById('filtro-empresa').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    
+    let url = `${API_BASE}/reportes/guias-agrupadas-pdf`;
+    const params = new URLSearchParams();
+    if (empresa_id) params.append('empresa_id', empresa_id);
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+    
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+    
+    showLoading(true);
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al generar el reporte');
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = `Reporte_Guias_Consolidado_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Hubo un error al generar el reporte');
+    })
+    .finally(() => {
+        showLoading(false);
+    });
+};
+
+window.descargarReporteDetalladoAdmin = function() {
+    const empresa_id = document.getElementById('filtro-empresa').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    
+    let url = `${API_BASE}/reportes/guias-detalladas-pdf`;
+    const params = new URLSearchParams();
+    if (empresa_id) params.append('empresa_id', empresa_id);
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+    
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+    
+    showLoading(true);
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al generar el reporte');
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = `Reporte_Guias_Detallado_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Hubo un error al generar el reporte detallado');
+    })
+    .finally(() => {
+        showLoading(false);
+    });
+};
+
+window.descargarReporteGuiasAdminExcel = function() {
+    const empresa_id = document.getElementById('filtro-empresa').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    
+    let url = `${API_BASE}/reportes/guias-agrupadas-excel`;
+    const params = new URLSearchParams();
+    if (empresa_id) params.append('empresa_id', empresa_id);
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+    
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+    
+    showLoading(true);
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al generar el reporte Excel');
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = `Reporte_Guias_Consolidado_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Hubo un error al generar el reporte Excel');
+    })
+    .finally(() => {
+        showLoading(false);
+    });
+};
+
+window.descargarReporteDetalladoAdminExcel = function() {
+    const empresa_id = document.getElementById('filtro-empresa').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    
+    let url = `${API_BASE}/reportes/guias-detalladas-excel`;
+    const params = new URLSearchParams();
+    if (empresa_id) params.append('empresa_id', empresa_id);
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+    
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+    
+    showLoading(true);
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al generar el reporte detallado Excel');
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = `Reporte_Guias_Detallado_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Hubo un error al generar el reporte detallado Excel');
+    })
+    .finally(() => {
+        showLoading(false);
+    });
+};
+
 async function loadPagosSection(container) {
     showLoading(true);
 
@@ -1462,7 +1735,7 @@ async function loadPagosSection(container) {
 
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">${isMaster ? '💳 Pagos por Verificar' : '💳 Mis Pagos'}</h1>
+                <h1 class="dashboard-title">${isMaster ? 'ðŸ’³ Pagos por Verificar' : 'ðŸ’³ Mis Pagos'}</h1>
                 <p class="dashboard-subtitle">${isMaster ? 'Listado de comprobantes de pago pendientes de aprobación' : 'Historial de pagos realizados'}</p>
             </div>
 
@@ -1507,14 +1780,14 @@ async function loadPagosSection(container) {
                                         <td>
                                             <div style="display: flex; flex-direction: column; gap: 5px;">
                                                 <button class="btn btn-primary btn-sm" onclick="verComprobante('${pago.comprobante_url}')">
-                                                    📸 Ver Captura
+                                                    ðŸ“¸ Ver Captura
                                                 </button>
                                                 <div style="display: flex; gap: 5px;">
                                                     <button class="btn btn-success btn-sm" style="flex: 1;" onclick="verificarPago('${pago.id}')">
-                                                        ✅ Aprobar
+                                                        âœ… Aprobar
                                                     </button>
                                                     <button class="btn btn-danger btn-sm" style="flex: 1;" onclick="rechazarPago('${pago.id}')">
-                                                        ❌ Rechazar
+                                                        âŒ Rechazar
                                                     </button>
                                                 </div>
                                             </div>
@@ -1555,10 +1828,10 @@ async function loadDeudasSection(container) {
     if (systemConfig.modulo_pagos_habilitado === 'false') {
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">💰 Deudas y Recargos</h1>
+                <h1 class="dashboard-title">ðŸ’° Deudas y Recargos</h1>
             </div>
             <div class="card" style="padding: 40px; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 20px;">🛡️</div>
+                <div style="font-size: 48px; margin-bottom: 20px;">ðŸ›¡ï¸</div>
                 <h2>Módulo Deshabilitado</h2>
                 <p style="color: #666; margin-top: 10px;">El sistema de pagos y cobranzas ha sido desactivado temporalmente por el administrador.</p>
                 <button class="btn btn-primary mt-3" onclick="navigateToSection('inicio')">Volver al Inicio</button>
@@ -1582,7 +1855,7 @@ async function loadDeudasSection(container) {
 
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">${isMaster ? '⚖️ Control de Deudas y Recargos' : '⚖️ Mis Deudas'}</h1>
+                <h1 class="dashboard-title">${isMaster ? 'âš–ï¸ Control de Deudas y Recargos' : 'âš–ï¸ Mis Deudas'}</h1>
                 <p class="dashboard-subtitle">${isMaster ? 'Seguimiento de guías pendientes con recargos por mora' : 'Estado de cuenta de tus guías pendientes de pago'}</p>
             </div>
 
@@ -1605,7 +1878,7 @@ async function loadDeudasSection(container) {
                                 onclick="subirComprobante('deuda_total', ${totalGeneral})"
                                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.2)'"
                                 onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'">
-                            💳 Pagar Deuda Total
+                            ðŸ’³ Pagar Deuda Total
                         </button>
                     ` : ''}
                 </div>
@@ -1619,7 +1892,7 @@ async function loadDeudasSection(container) {
 
                 ${deudas.length === 0 ? `
                     <div class="card-body text-center" style="padding: 40px;">
-                        <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                        <div style="font-size: 48px; margin-bottom: 16px;">âœ…</div>
                         <p style="color: #666; font-size: 18px; font-weight: 600;">¡No tienes deudas pendientes!</p>
                         <p style="color: #999;">Todas tus guías solicitadas han sido pagadas o no hay registros.</p>
                     </div>
@@ -1650,7 +1923,7 @@ async function loadDeudasSection(container) {
                                             <td>
                                                 ${formatDate(guia.created_at)}
                                                 <br><small style="color: ${tieneRecargo ? '#e74c3c' : '#888'}; font-weight: ${tieneRecargo ? '700' : '400'};">
-                                                    ${tieneRecargo ? '⚠️ MÁS DE 24H' : '⏱️ En plazo'}
+                                                    ${tieneRecargo ? 'âš ï¸ MÁS DE 24H' : 'â±ï¸ En plazo'}
                                                 </small>
                                             </td>
                                             ${isMaster ? `<td>${guia.empresa_nombre}</td>` : ''}
@@ -1667,7 +1940,7 @@ async function loadDeudasSection(container) {
                                             </td>
                                             <td>
                                                 <button class="btn btn-primary btn-sm" onclick="subirComprobante('${guia.id}', ${pendiente})">
-                                                    💳 ${abonado > 0 ? 'Abonar' : 'Pagar'}
+                                                    ðŸ’³ ${abonado > 0 ? 'Abonar' : 'Pagar'}
                                                 </button>
                                             </td>
                                         </tr>
@@ -1681,7 +1954,7 @@ async function loadDeudasSection(container) {
             
             <div class="card" style="margin-top: 24px; background: #fffcf0; border: 1px solid #ffeeba;">
                 <div class="card-body" style="display: flex; gap: 16px; align-items: flex-start; padding: 20px;">
-                    <div style="font-size: 24px;">🔔</div>
+                    <div style="font-size: 24px;">🔍”</div>
                     <div>
                         <h4 style="color: #856404; margin-bottom: 4px; font-weight: 700;">Política de Recargos</h4>
                         <p style="font-size: 13px; color: #856404; line-height: 1.5; margin: 0;">
@@ -1732,14 +2005,28 @@ function updateNotificationBadge(count) {
 
 // ===== FUNCIONES DE GUÍAS =====
 // Lista de materiales disponibles
-const MATERIALES_DISPONIBLES = [
+let MATERIALES_DISPONIBLES = [
     'Piedra Picada', 'Arrocillo', 'Arena 2"', 'Arena 2/4', 'Arena 5"',
     'Agregado 4/8', 'Agregado 8/15', 'Agregado 5/15', 'Agregado 15/25',
     'Arena Integral', 'Granzón', 'P100', 'P3000', 'Coraza',
     'Arena Cernida', 'Canto Rodado', 'Polvillo', 'Arena Amarilla', 'Arena Lavada', 'Otros'
 ];
 
-function mostrarFormularioGuia() {
+async function mostrarFormularioGuia() {
+    showLoading(true);
+    try {
+        const response = await fetch(`${API_BASE}/minerales`);
+        const data = await response.json();
+        
+        if (data.success && data.minerales && data.minerales.length > 0) {
+            MATERIALES_DISPONIBLES = data.minerales.map(m => m.nombre);
+        }
+    } catch (err) {
+        console.error('Error al cargar minerales dinámicos:', err);
+    } finally {
+        showLoading(false);
+    }
+
     const materialesOptions = MATERIALES_DISPONIBLES.map(m =>
         `<option value="${m}">${m}</option>`
     ).join('');
@@ -1783,22 +2070,26 @@ function mostrarFormularioGuia() {
 
                         <!-- DATOS DEL CLIENTE -->
                         <div style="margin-bottom: 25px;">
-                            <h4 style="margin: 20px 0 15px; color: #1a5f7a; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px; font-size: 18px;">
-                                Datos del Cliente
-                            </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px;">
+                                <h4 style="margin: 0; color: #1a5f7a; font-size: 18px;">Datos del Cliente</h4>
+                                <button type="button" onclick="abrirSelectorDirectorio('clientes')" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1a5f7a,#2980b9);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(26,95,122,0.3);transition:all 0.2s;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                    Directorio
+                                </button>
+                            </div>
                             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
                                 <div class="form-group">
                                     <label>Razón Social / Nombre *</label>
-                                    <input type="text" name="cliente_nombre" class="form-control" required placeholder="Nombre de la empresa o persona">
+                                    <input type="text" name="cliente_nombre" id="campo-cliente_nombre" class="form-control" required placeholder="Nombre de la empresa o persona">
                                 </div>
                                 <div class="form-group">
                                     <label>RIF / Cédula *</label>
-                                    <input type="text" name="cliente_rif" class="form-control" required placeholder="Ej: J-12345678-9">
+                                    <input type="text" name="cliente_rif" id="campo-cliente_rif" class="form-control" required placeholder="Ej: J-12345678-9">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Dirección Fiscal *</label>
-                                <input type="text" name="cliente_direccion" class="form-control" required placeholder="Dirección legal del cliente">
+                                <input type="text" name="cliente_direccion" id="campo-cliente_direccion" class="form-control" required placeholder="Dirección legal del cliente">
                             </div>
                         </div>
 
@@ -1819,29 +2110,33 @@ function mostrarFormularioGuia() {
 
                         <!-- DATOS DEL VEHÍCULO -->
                         <div style="margin-bottom: 25px;">
-                            <h4 style="margin: 20px 0 15px; color: #1a5f7a; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px; font-size: 18px;">
-                                Datos del Vehículo
-                            </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px;">
+                                <h4 style="margin: 0; color: #1a5f7a; font-size: 18px;">Datos del Vehículo</h4>
+                                <button type="button" onclick="abrirSelectorDirectorio('vehiculos')" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1a5f7a,#2980b9);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(26,95,122,0.3);transition:all 0.2s;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                    Directorio
+                                </button>
+                            </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div class="form-group">
                                     <label>Marca *</label>
-                                    <input type="text" name="vehiculo_marca" class="form-control" required placeholder="Ej: Ford, Chevrolet">
+                                    <input type="text" name="vehiculo_marca" id="campo-vehiculo_marca" class="form-control" required placeholder="Ej: Ford, Chevrolet">
                                 </div>
                                 <div class="form-group">
                                     <label>Modelo *</label>
-                                    <input type="text" name="vehiculo_modelo" class="form-control" required placeholder="Ej: F-350, NPR">
+                                    <input type="text" name="vehiculo_modelo" id="campo-vehiculo_modelo" class="form-control" required placeholder="Ej: F-350, NPR">
                                 </div>
                                 <div class="form-group">
                                     <label>Color *</label>
-                                    <input type="text" name="vehiculo_color" class="form-control" required placeholder="Ej: Blanco, Rojo">
+                                    <input type="text" name="vehiculo_color" id="campo-vehiculo_color" class="form-control" required placeholder="Ej: Blanco, Rojo">
                                 </div>
                                 <div class="form-group">
                                     <label>Placa *</label>
-                                    <input type="text" name="vehiculo_placa" class="form-control" required placeholder="Ej: A1B2C3D" style="text-transform: uppercase;">
+                                    <input type="text" name="vehiculo_placa" id="campo-vehiculo_placa" class="form-control" required placeholder="Ej: A1B2C3D" style="text-transform: uppercase;">
                                 </div>
                                 <div class="form-group">
                                     <label>Tipo de Carrocería *</label>
-                                    <select name="vehiculo_carroceria" class="form-control" required>
+                                    <select name="vehiculo_carroceria" id="campo-vehiculo_carroceria" class="form-control" required>
                                         <option value="">Seleccione...</option>
                                         <option value="Volteo">Volteo</option>
                                         <option value="Plataforma">Plataforma</option>
@@ -1855,17 +2150,21 @@ function mostrarFormularioGuia() {
 
                         <!-- DATOS DEL CONDUCTOR -->
                         <div style="margin-bottom: 25px;">
-                            <h4 style="margin: 20px 0 15px; color: #1a5f7a; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px; font-size: 18px;">
-                                Datos del Conductor
-                            </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #1a5f7a; padding-bottom: 5px;">
+                                <h4 style="margin: 0; color: #1a5f7a; font-size: 18px;">Datos del Conductor</h4>
+                                <button type="button" onclick="abrirSelectorDirectorio('choferes')" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1a5f7a,#2980b9);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(26,95,122,0.3);transition:all 0.2s;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                    Directorio
+                                </button>
+                            </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div class="form-group">
                                     <label>Nombres y Apellidos *</label>
-                                    <input type="text" name="conductor_nombre" class="form-control" required placeholder="Nombre completo del conductor">
+                                    <input type="text" name="conductor_nombre" id="campo-conductor_nombre" class="form-control" required placeholder="Nombre completo del conductor">
                                 </div>
                                 <div class="form-group">
                                     <label>Cédula de Identidad *</label>
-                                    <input type="text" name="conductor_cedula" class="form-control" required placeholder="Ej: V-12345678">
+                                    <input type="text" name="conductor_cedula" id="campo-conductor_cedula" class="form-control" required placeholder="Ej: V-12345678">
                                 </div>
                             </div>
                         </div>
@@ -1899,8 +2198,8 @@ function mostrarFormularioGuia() {
                 <button type="button" class="btn btn-primary" onclick="previsualizarGuia()" style="background: #007aff; padding: 10px 20px;">📄 Previsualizar Guía</button>
             </div>
             <div class="modal-footer" id="modal-footer-preview" style="display: none;">
-                <button type="button" class="btn btn-secondary" onclick="cancelarPrevisualizacion()">⬅ Volver a Editar</button>
-                <button type="button" class="btn btn-success" onclick="solicitarGuiaDefinitiva()" style="background: #28a745; padding: 10px 20px;">✅ Generar Guía Definitiva</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelarPrevisualizacion()">â¬… Volver a Editar</button>
+                <button type="button" class="btn btn-success" onclick="solicitarGuiaDefinitiva()" style="background: #28a745; padding: 10px 20px;">âœ… Generar Guía Definitiva</button>
             </div>
         </div>
     </div>
@@ -1924,6 +2223,7 @@ function cerrarModalGuia() {
 let tempGuiaData = null;
 
 async function previsualizarGuia() {
+    console.log('--- Iniciando Captura de Datos para Preview ---');
     const form = document.getElementById('guia-form');
     if (!form) {
         alert('Error: No se encontró el formulario');
@@ -1946,31 +2246,50 @@ async function previsualizarGuia() {
 
     const materiales = [];
     for (let i = 0; i < tipos.length; i++) {
-        if (tipos[i].value && cantidades[i].value) {
+        const nombre = tipos[i] ? tipos[i].value : '';
+        const cantidadStr = cantidades[i] ? cantidades[i].value : '0';
+        
+        if (nombre && cantidadStr && parseFloat(cantidadStr) > 0) {
+            const precioUSD = precios[i] ? parseFloat(precios[i].value) || 0 : 0;
+            let precioBS = 0;
+            let precioBSText = "";
+            
+            if (precios_bs[i] && precios_bs[i].value) {
+                precioBSText = precios_bs[i].value.trim();
+                precioBS = parseFloat(precioBSText.replace(/\./g, '').replace(',', '.')) || 0;
+            }
+
             materiales.push({
-                nombre: tipos[i].value,
-                cantidad: parseFloat(cantidades[i].value),
-                unidad: unidades[i].value,
-                precio_unitario: parseFloat(precios[i].value) || 0,
-                precio_unitario_bs: parseFloat(precios_bs[i].value.replace(/\./g, '').replace(',', '.')) || 0,
-                precio_unitario_bs_text: precios_bs[i].value.trim()
+                nombre: nombre,
+                cantidad: parseFloat(cantidadStr),
+                unidad: unidades[i] ? unidades[i].value : 'toneladas',
+                precio_unitario: precioUSD,
+                precio_unitario_bs: precioBS,
+                precio_unitario_bs_text: precioBSText
             });
         }
     }
 
+    console.log('Materiales procesados:', materiales);
+
     if (materiales.length === 0) {
-        alert('Debe agregar al menos un material con su cantidad.');
+        alert('Debe agregar al menos un material con su cantidad mayor a cero.');
         return;
     }
 
     data.materiales = materiales;
-    tempGuiaData = data; // Lo guardamos para la solicitud definitiva
+    tempGuiaData = data;
 
-    // UI Changes para mostrar preview
-    document.getElementById('guia-modal-content').style.maxWidth = '1400px';
-    document.getElementById('guia-preview-container').style.display = 'flex';
-    document.getElementById('modal-footer-normal').style.display = 'none';
-    document.getElementById('modal-footer-preview').style.display = 'flex';
+    // Actualizar UI
+    const modalContent = document.getElementById('guia-modal-content');
+    const previewContainer = document.getElementById('guia-preview-container');
+    const footerNormal = document.getElementById('modal-footer-normal');
+    const footerPreview = document.getElementById('modal-footer-preview');
+
+    if (modalContent) modalContent.style.maxWidth = '1400px';
+    if (previewContainer) previewContainer.style.display = 'flex';
+    if (footerNormal) footerNormal.style.display = 'none';
+    if (footerPreview) footerPreview.style.display = 'flex';
     
     // Bloquear formulario
     Array.from(form.elements).forEach(el => el.disabled = true);
@@ -1978,10 +2297,11 @@ async function previsualizarGuia() {
     const iframe = document.getElementById('pdf-preview-iframe');
     const loading = document.getElementById('preview-loading');
     
-    iframe.style.display = 'none';
-    loading.style.display = 'block';
+    if (iframe) iframe.style.display = 'none';
+    if (loading) loading.style.display = 'block';
 
     try {
+        console.log('Enviando solicitud de preview a:', `${API_BASE}/guias/previsualizar`);
         const response = await fetch(`${API_BASE}/guias/previsualizar`, {
             method: 'POST',
             headers: {
@@ -1993,21 +2313,29 @@ async function previsualizarGuia() {
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error || 'Error al generar la vista previa');
+            throw new Error(errData.error || `Error del servidor: ${response.status}`);
         }
 
         const blob = await response.blob();
+        if (blob.type !== 'application/pdf') {
+            throw new Error('El servidor no devolvió un PDF válido.');
+        }
+
         const objectUrl = URL.createObjectURL(blob);
         
-        iframe.src = objectUrl;
-        loading.style.display = 'none';
-        iframe.style.display = 'block';
+        if (iframe) {
+            iframe.src = objectUrl;
+            loading.style.display = 'none';
+            iframe.style.display = 'block';
+        }
 
     } catch (error) {
+        console.error('Error detallado en preview:', error);
         alert('Error en previsualización: ' + error.message);
         cancelarPrevisualizacion();
     }
 }
+
 
 function cancelarPrevisualizacion() {
     document.getElementById('guia-modal-content').style.maxWidth = '900px';
@@ -2028,7 +2356,58 @@ async function solicitarGuiaDefinitiva() {
         return;
     }
 
-    const data = tempGuiaData;
+    const data = { ...tempGuiaData };
+
+    // ===== DETECCIÓN INTELIGENTE DE DATOS NUEVOS =====
+    try {
+        const [clientesRes, choferesRes, vehiculosRes] = await Promise.all([
+            apiRequest('/directorios/clientes'),
+            apiRequest('/directorios/choferes'),
+            apiRequest('/directorios/vehiculos')
+        ]);
+
+        const clientes  = clientesRes.clientes  || [];
+        const choferes  = choferesRes.choferes  || [];
+        const vehiculos = vehiculosRes.vehiculos || [];
+
+        const rifNorm   = (data.cliente_rif     || '').trim().toUpperCase();
+        const cedNorm   = (data.conductor_cedula || '').trim().toUpperCase();
+        const placaNorm = (data.vehiculo_placa   || '').trim().toUpperCase();
+
+        const clienteNuevo  = rifNorm   && !clientes.some(c => c.rif.toUpperCase()    === rifNorm);
+        const conductorNuevo = cedNorm  && !choferes.some(c => c.cedula.toUpperCase() === cedNorm);
+        const vehiculoNuevo  = placaNorm && !vehiculos.some(v => v.placa.toUpperCase() === placaNorm);
+
+        // Construir mensaje según lo que sea nuevo
+        if (clienteNuevo || conductorNuevo || vehiculoNuevo) {
+            const nuevos = [];
+            if (clienteNuevo)   nuevos.push(`📋 Cliente: <strong>${data.cliente_nombre}</strong> (RIF: ${rifNorm})`);
+            if (conductorNuevo) nuevos.push(`🧑 Conductor: <strong>${data.conductor_nombre}</strong> (Cédula: ${cedNorm})`);
+            if (vehiculoNuevo)  nuevos.push(`🚛 Vehículo: <strong>${data.vehiculo_marca} ${data.vehiculo_modelo}</strong> (Placa: ${placaNorm})`);
+
+            const result = await Swal.fire({
+                title: '📂 Datos nuevos detectados',
+                html: `Hemos detectado los siguientes datos que no están en tu directorio:<br><br>${nuevos.join('<br>')}.<br><br>¿Deseas guardarlos en tu directorio para usarlos en el futuro?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ Sí, guardar',
+                cancelButtonText: '❌ No, continuar sin guardar',
+                confirmButtonColor: '#1a5f7a',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: false
+            });
+
+            if (result.isConfirmed) {
+                if (clienteNuevo)   data.guardar_cliente_dir   = true;
+                if (conductorNuevo) data.guardar_conductor_dir = true;
+                if (vehiculoNuevo)  data.guardar_vehiculo_dir  = true;
+            }
+        }
+    } catch (dirErr) {
+        // Si falla la consulta de directorios, ignorar y continuar normalmente
+        console.warn('No se pudo verificar directorios:', dirErr.message);
+    }
+    // ===== FIN DETECCIÓN INTELIGENTE =====
 
     showLoading(true);
 
@@ -2037,9 +2416,14 @@ async function solicitarGuiaDefinitiva() {
 
         if (response.success) {
             if (response.details) {
-                alert(`⚠️ ${response.message}\n\nDetalles del error PDF: ${response.details}\n\n📋 Número de Guía: ${response.guia.numero_guia}\n💰 Tasa BCV: ${response.guia.tasa_bcv} Bs./$\n💵 Monto: Bs. ${formatNumber(response.guia.monto_pagar)}`);
+                alert(`⚠️ ${response.message}\n\nDetalles del error PDF: ${response.details}\n\n📋 Número de Guía: ${response.guia.numero_guia}\n💰 Tasa BCV: ${response.guia.tasa_bcv} Bs./$\n💰 Monto: Bs. ${formatNumber(response.guia.monto_pagar)}`);
             } else {
-                alert(`✅ Guía solicitada exitosamente.\n\n📋 Número de Guía: ${response.guia.numero_guia}\n💰 Tasa BCV Aplicada: ${response.guia.tasa_bcv} Bs./$\n💵 Monto Total a Pagar: Bs. ${formatNumber(response.guia.monto_pagar)}\n🏦 Banco: ${response.guia.banco}\n💳 Cuenta: ${response.guia.cuenta}\n\nPor favor, realice el pago y suba el comprobante.`);
+                Swal.fire({
+                    icon: 'success',
+                    title: '✅ Guía generada exitosamente',
+                    html: `📋 <strong>Número:</strong> ${response.guia.numero_guia}<br>💰 <strong>Tasa BCV:</strong> ${response.guia.tasa_bcv} Bs./$<br>💰 <strong>Monto:</strong> Bs. ${formatNumber(response.guia.monto_pagar)}`,
+                    confirmButtonColor: '#1a5f7a'
+                });
             }
             cerrarModalGuia();
             loadDashboard();
@@ -2268,7 +2652,7 @@ async function anularGuia(guiaId) {
 
 async function eliminarGuia(guiaId, numeroGuia) {
     const { value: clave } = await Swal.fire({
-        title: '🗑️ Eliminar Guía Permanentemente',
+        title: 'ðŸ—‘ï¸ Eliminar Guía Permanentemente',
         html: `<p style="margin-bottom:12px;">Esta acción <strong>no se puede deshacer</strong>. Se eliminará la guía <strong>${numeroGuia}</strong> de forma definitiva.</p>
                <p>Ingresa la clave de administrador para continuar:</p>`,
         input: 'password',
@@ -2286,7 +2670,7 @@ async function eliminarGuia(guiaId, numeroGuia) {
     try {
         const response = await apiRequest(`/guias/${guiaId}`, 'DELETE', { clave_admin: clave });
         if (response.success) {
-            Swal.fire('✅ Eliminada', `La guía ${numeroGuia} fue eliminada permanentemente.`, 'success');
+            Swal.fire('âœ… Eliminada', `La guía ${numeroGuia} fue eliminada permanentemente.`, 'success');
             loadDashboard();
         } else {
             throw new Error(response.error || 'Error al eliminar');
@@ -2384,7 +2768,7 @@ async function refreshSystemConfig() {
         const response = await apiRequest(`/sistema/config?_t=${new Date().getTime()}`);
         if (response.success) {
             systemConfig = { ...systemConfig, ...response.config };
-            console.log('⚙️ Configuración cargada:', systemConfig);
+            console.log('âš™ï¸ Configuración cargada:', systemConfig);
         }
     } catch (error) {
         // Silenciar errores de autenticación durante la carga inicial
@@ -2577,7 +2961,7 @@ async function loadConfirmacionPage() {
                     <div id="confirmacion-error" class="error-message" style="display: none; margin-bottom: 15px; padding: 12px; background: #fee; border-radius: 8px; color: #c00;"></div>
 
                     <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; padding: 15px; font-size: 16px; font-weight: 600;">
-                        ✓ Confirmar Llegada del Mineral
+                        âœ“ Confirmar Llegada del Mineral
                     </button>
                 </form>
 
@@ -2606,7 +2990,7 @@ function previewImage(input) {
         reader.onload = function (e) {
             preview.innerHTML = `
                 <img src="${e.target.result}" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
-                <p style="color: #28a745; font-size: 14px; margin-top: 10px;">✓ Foto cargada</p>
+                <p style="color: #28a745; font-size: 14px; margin-top: 10px;">âœ“ Foto cargada</p>
             `;
         };
         reader.readAsDataURL(input.files[0]);
@@ -2731,7 +3115,7 @@ async function loadConfirmacionesSection(container) {
                                                     Ver Detalles
                                                 </button>
                                                 <button class="btn btn-outline btn-sm" onclick="window.open('${API_BASE}/confirmaciones/${conf.id}/foto', '_blank')" title="Ver Foto Original">
-                                                    📸 Ver Foto
+                                                    ðŸ“¸ Ver Foto
                                                 </button>
                                             </div>
                                         </td>
@@ -2753,11 +3137,11 @@ async function loadConfirmacionesSection(container) {
 
 function getValidacionBadge(validada, confianza) {
     if (validada && confianza >= 70) {
-        return `<span class="badge badge-success">✅ Validada (${confianza}%)</span>`;
+        return `<span class="badge badge-success">âœ… Validada (${confianza}%)</span>`;
     } else if (validada && confianza >= 50) {
-        return `<span class="badge badge-warning">⚠️ Parcial (${confianza}%)</span>`;
+        return `<span class="badge badge-warning">âš ï¸ Parcial (${confianza}%)</span>`;
     } else {
-        return `<span class="badge badge-danger">❌ Rechazada (${confianza || 0}%)</span>`;
+        return `<span class="badge badge-danger">âŒ Rechazada (${confianza || 0}%)</span>`;
     }
 }
 
@@ -2807,11 +3191,11 @@ async function verConfirmacion(confirmacionId) {
                             <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Validación Automática</h3>
                             <div style="background: ${conf.foto_validada ? '#e8f5e9' : '#ffebee'}; padding: 15px; border-radius: 8px;">
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                    ${conf.foto_validada ? '<span style="font-size: 24px;">✅</span>' : '<span style="font-size: 24px;">❌</span>'}
+                                    ${conf.foto_validada ? '<span style="font-size: 24px;">âœ…</span>' : '<span style="font-size: 24px;">âŒ</span>'}
                                     <span style="font-size: 18px; font-weight: 600;">Confianza: ${conf.validacion_confianza}%</span>
                                 </div>
                                 <p style="margin: 0; font-size: 14px; color: #666;">
-                                    ${conf.coincidencia_numero_guia ? '✓ Número de guía coincide con el ingresado' : '⚠ No se pudo verificar el número de guía en la foto'}
+                                    ${conf.coincidencia_numero_guia ? 'âœ“ Número de guía coincide con el ingresado' : 'âš  No se pudo verificar el número de guía en la foto'}
                                 </p>
                             </div>
                         </div>
@@ -2895,7 +3279,7 @@ async function loadProfileSection(container) {
     if (currentUser.role === 'master') {
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">👤 Perfil de Administrador</h1>
+                <h1 class="dashboard-title">ðŸ‘¤ Perfil de Administrador</h1>
                 <p class="dashboard-subtitle">Información de la cuenta</p>
             </div>
 
@@ -2936,7 +3320,7 @@ async function loadProfileSection(container) {
 
         container.innerHTML = `
             <div class="dashboard-header">
-                <h1 class="dashboard-title">👤 Perfil de Empresa</h1>
+                <h1 class="dashboard-title">ðŸ‘¤ Perfil de Empresa</h1>
                 <p class="dashboard-subtitle">Gestiona la identidad de tu empresa</p>
             </div>
 
@@ -3325,7 +3709,7 @@ async function loadNotificationsContent() {
                     desc: `${p.empresa_nombre} reportó pago de Bs. ${formatNumber(p.monto)}`,
                     time: p.created_at,
                     type: 'warning',
-                    icon: '💰'
+                    icon: 'ðŸ’°'
                 }));
             }
         } else {
@@ -3339,10 +3723,10 @@ async function loadNotificationsContent() {
                         let msg = `Guía #${g.numero_guia} creada`;
                         let icon = '📄';
 
-                        if (g.estado === 'activa') { type = 'success'; msg = `Guía #${g.numero_guia} APROBADA y Activa`; icon = '✅'; }
-                        if (g.estado === 'usada') { type = 'info'; msg = `Guía #${g.numero_guia} completada`; icon = '🚚'; }
-                        if (g.estado === 'anulada') { type = 'danger'; msg = `Guía #${g.numero_guia} ANULADA`; icon = '❌'; }
-                        if (g.estado === 'pendiente_pago') { type = 'warning'; msg = `Guía #${g.numero_guia} pendiente de pago`; icon = '⏳'; }
+                        if (g.estado === 'activa') { type = 'success'; msg = `Guía #${g.numero_guia} APROBADA y Activa`; icon = 'âœ…'; }
+                        if (g.estado === 'usada') { type = 'info'; msg = `Guía #${g.numero_guia} completada`; icon = 'ðŸšš'; }
+                        if (g.estado === 'anulada') { type = 'danger'; msg = `Guía #${g.numero_guia} ANULADA`; icon = 'âŒ'; }
+                        if (g.estado === 'pendiente_pago') { type = 'warning'; msg = `Guía #${g.numero_guia} pendiente de pago`; icon = 'â³'; }
 
                         return {
                             title: 'Actualización de Guía',
@@ -3362,7 +3746,7 @@ async function loadNotificationsContent() {
     if (notifications.length === 0) {
         list.innerHTML = `
             <div class="empty-notifications">
-                <div style="font-size: 24px; margin-bottom: 10px;">📭</div>
+                <div style="font-size: 24px; margin-bottom: 10px;">ðŸ“­</div>
                 No tienes notificaciones nuevas
             </div>`;
         return;
@@ -3480,7 +3864,7 @@ async function verificarGuiaPublica(guiaId, hash) {
                 html: `
                     <div style="text-align: left; font-size: 14px; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
                         <div style="text-align: center; margin-bottom: 20px; padding: 15px; border-radius: 12px; background: ${statusBg}; border: 2.5px solid ${statusColor}; color: ${statusColor}; font-weight: 800; font-size: 16px; letter-spacing: 0.5px;">
-                            ${data.autentica ? '✅ GUÍA AUTÉNTICA' : '⚠️ FIRMA DIGITAL NO VÁLIDA'}
+                            ${data.autentica ? 'âœ… GUÍA AUTÉNTICA' : 'âš ï¸ FIRMA DIGITAL NO VÁLIDA'}
                             ${!data.autentica ? '<br><small style="font-weight: 400; font-size: 11px;">Este documento podría ser una falsificación o el código es inválido.</small>' : ''}
                         </div>
                         <p style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;"><strong>N° Guía:</strong> ${g.numero_guia}</p>
@@ -3490,7 +3874,7 @@ async function verificarGuiaPublica(guiaId, hash) {
                         <p style="margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 4px;"><strong>Placa:</strong> <span style="font-family: monospace; font-size: 15px; background: #eee; padding: 1px 6px; border-radius: 4px;">${g.vehiculo_placa}</span></p>
                         
                         <div style="margin-top: 15px; padding: 15px; background: #fdfdfd; border-radius: 16px; border: 1px solid #eee; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                            <h4 style="margin: 0 0 12px; font-size: 13px; color: #1a5f7a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1a5f7a; padding-bottom: 6px; display: inline-block;">📦 Minerales Transportados</h4>
+                            <h4 style="margin: 0 0 12px; font-size: 13px; color: #1a5f7a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1a5f7a; padding-bottom: 6px; display: inline-block;">ðŸ“¦ Minerales Transportados</h4>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 ${g.materiales && g.materiales.length > 0 ? 
                                     g.materiales.map(m => `
@@ -3597,7 +3981,7 @@ function renderUsuarios(container) {
 
             <!-- Resumen Rápido -->
             <div class="stat-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(135deg, #1a5f7a 0%, #0d2b38 100%); color: white;">
-                <div style="font-size: 40px; margin-bottom: 10px;">👥</div>
+                <div style="font-size: 40px; margin-bottom: 10px;">ðŸ‘¥</div>
                 <h3 style="color: white; margin-bottom: 5px;">Control de Usuarios</h3>
                 <p style="opacity: 0.8; font-size: 13px;">Como administrador Master, puedes habilitar o deshabilitar accesos en tiempo real para mantener la seguridad del sistema.</p>
             </div>
@@ -3710,24 +4094,24 @@ async function renderListaUsuarios() {
                                 <div style="display: flex; gap: 5px;">
                                     ${u.role === 'empresa' && u.empresa_id ? `
                                         <button class="btn btn-primary btn-sm" onclick="editarEmpresa('${u.empresa_id}', '${u.empresa_nombre || u.username}', '${u.codigo_letra || ''}')" title="Editar Empresa">
-                                            ✏️
+                                            âœï¸
                                         </button>
                                     ` : ''}
                                     ${u.role === 'contribuyente' && u.empresa_id ? `
                                         <button class="btn btn-info btn-sm" onclick="vincularAliado('${u.id}', '${u.empresa_id}')" title="Vincular a Empresa">
-                                            🔗
+                                            🔍—
                                         </button>
                                     ` : ''}
                                     ${u.role !== 'master' ? `
                                         <button class="btn btn-secondary btn-sm" onclick="cambiarClaveUsuario('${u.id}', '${u.username}')" title="Cambiar Contraseña">
-                                            🔑
+                                            🔍‘
                                         </button>
                                     ` : ''}
                                     <button class="btn ${u.activo ? 'btn-danger' : 'btn-success'} btn-sm" onclick="toggleUserStatus('${u.id}', ${u.activo})">
                                         ${u.activo ? 'Desactivar' : 'Activar'}
                                     </button>
                                     <button class="btn btn-danger btn-sm" onclick="eliminarUsuario('${u.id}')" title="Borrar Registros del Usuario" style="background-color: #dc3545; border-color: #dc3545;">
-                                        🗑️
+                                        ðŸ—‘ï¸
                                     </button>
                                 </div>
                             </td>
@@ -3815,7 +4199,7 @@ async function toggleUserStatus(userId, currentStatus) {
 
 async function eliminarUsuario(userId) {
     const confirm = await Swal.fire({
-        title: '⚠️ ¿Eliminar Usuario?',
+        title: 'âš ï¸ ¿Eliminar Usuario?',
         text: "La eliminación será permanente. Si el usuario ya facturó / creó guías, el sistema denegará la eliminación para no dañar los registros históricos.",
         icon: 'warning',
         showCancelButton: true,
@@ -3913,7 +4297,7 @@ async function crearUsuario(event) {
 
 async function editarEmpresa(empresaId, nombreActual, letraActual) {
     const { value: formValues } = await Swal.fire({
-        title: '✏️ Editar Empresa',
+        title: 'âœï¸ Editar Empresa',
         html: `
             <div style="text-align: left;">
                 <label style="display: block; font-weight: 600; margin-bottom: 5px;">Razón Social</label>
@@ -3981,7 +4365,7 @@ async function vincularAliado(userId, currentEmpresaId) {
     let opcionesEmpresas = selectPadre ? selectPadre.innerHTML : '<option value="">No se pudieron cargar las empresas</option>';
 
     const { value: empresaId } = await Swal.fire({
-        title: '🔗 Vincular Aliado',
+        title: '🔍— Vincular Aliado',
         html: `
             <div style="text-align: left;">
                 <label style="display: block; font-weight: 600; margin-bottom: 5px;">Seleccione la Empresa Raíz</label>
@@ -4050,9 +4434,9 @@ function renderDashboardFiscalizador(container) {
                 <h3>Verificación Rápida</h3>
                 <p style="color: #666; margin-bottom: 20px;">Use el escáner para verificar guías en puntos de control.</p>
                 <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; padding: 20px; border: 2px dashed #1a5f7a; border-radius: 12px; background: rgba(26, 95, 122, 0.05);">
-                    <div style="font-size: 48px;">📷</div>
+                    <div style="font-size: 48px;">ðŸ“·</div>
                     <button class="btn btn-primary" onclick="startFiscalizadorScanner()">
-                        <span>🔍</span> Escanear Código QR
+                        <span>🔍</span> Escanear Código QR
                     </button>
                     <p style="font-size: 12px; color: #666;">Permite registrar la verificación oficial en el sistema.</p>
                 </div>
@@ -4076,10 +4460,13 @@ function renderDashboardFiscalizador(container) {
                         <input type="date" id="historial-end-date" class="form-control">
                     </div>
                     <button class="btn btn-secondary" onclick="loadHistorialVerificaciones()">
-                        <span>🔍</span> Filtrar
+                        <span>🔍</span> Filtrar
                     </button>
                     <button class="btn btn-success" onclick="descargarReporteVerificaciones()">
-                        <span>📄</span> Descargar PDF
+                        <span>📄</span> PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="descargarReporteVerificacionesExcel()" style="background: #28a745; border-color: #28a745;">
+                        <span>📊</span> Excel
                     </button>
                 </div>
             </div>
@@ -4093,7 +4480,7 @@ function renderDashboardFiscalizador(container) {
              <div style="width: 90%; max-width: 500px; background: #fff; border-radius: 12px; overflow: hidden; position: relative;">
                 <div style="padding: 15px; background: #1a5f7a; color: #fff; display: flex; justify-content: space-between;">
                     <h3 style="margin:0; font-size: 16px;">Escáner de Fiscalización</h3>
-                    <span onclick="stopFiscalizadorScanner()" style="cursor:pointer; font-weight:bold;">✕</span>
+                    <span onclick="stopFiscalizadorScanner()" style="cursor:pointer; font-weight:bold;">âœ•</span>
                 </div>
                 <div id="fiscalizador-qr-reader" style="width: 100%;"></div>
                 <div style="padding: 15px; text-align: center;">
@@ -4279,7 +4666,7 @@ async function onFiscalizadorScanSuccess(decodedText) {
             html: `
                 <div style="text-align: left; font-size: 14px; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
                     <div style="text-align: center; margin-bottom: 20px; padding: 15px; border-radius: 12px; background: ${statusBg}; border: 2.5px solid ${statusColor}; color: ${statusColor}; font-weight: 800; font-size: 16px; letter-spacing: 0.5px;">
-                        ✅ GUÍA VERIFICADA Y REGISTRADA
+                        âœ… GUÍA VERIFICADA Y REGISTRADA
                     </div>
                     <p style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;"><strong>N° Guía:</strong> ${g.numero_guia}</p>
                     <p style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;"><strong>Estado:</strong> <span style="background: ${g.estado === 'activa' ? '#e6f4ea' : '#fce8e6'}; color: ${g.estado === 'activa' ? '#1e8e3e' : '#d93025'}; padding: 2px 8px; border-radius: 20px; font-weight: 800; font-size: 11px;">${g.estado.toUpperCase()}</span></p>
@@ -4288,7 +4675,7 @@ async function onFiscalizadorScanSuccess(decodedText) {
                     <p style="margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 4px;"><strong>Placa:</strong> <span style="font-family: monospace; font-size: 15px; background: #eee; padding: 1px 6px; border-radius: 4px;">${g.vehiculo_placa}</span></p>
                     
                     <div style="margin-top: 15px; padding: 15px; background: #fdfdfd; border-radius: 16px; border: 1px solid #eee; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                        <h4 style="margin: 0 0 12px; font-size: 13px; color: #1a5f7a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1a5f7a; padding-bottom: 6px; display: inline-block;">📦 Minerales Transportados</h4>
+                        <h4 style="margin: 0 0 12px; font-size: 13px; color: #1a5f7a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1a5f7a; padding-bottom: 6px; display: inline-block;">ðŸ“¦ Minerales Transportados</h4>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             ${g.materiales && g.materiales.length > 0 ? 
                                 g.materiales.map(m => `
@@ -4426,9 +4813,58 @@ async function descargarReporteVerificaciones() {
     }
 }
 
+async function descargarReporteVerificacionesExcel() {
+    const start = document.getElementById('historial-start-date')?.value;
+    const end = document.getElementById('historial-end-date')?.value;
+
+    if (!start || !end) {
+        return Swal.fire('Atención', 'Seleccione un rango de fechas (Desde/Hasta) para generar el Excel.', 'info');
+    }
+
+    // Si estamos en entorno Capacitor/Móvil, usamos el navegador del sistema para las descargas
+    if (window.Capacitor && window.Capacitor.getPlatform() !== 'web') {
+        const downloadUrl = `${API_BASE}/reportes/verificaciones-excel?startDate=${start}&endDate=${end}&token=${authToken}`;
+        window.open(downloadUrl, '_system');
+        return;
+    }
+
+    try {
+        Swal.fire({
+            title: 'Generando Excel...',
+            text: 'Espere un momento por favor.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const response = await fetch(`${API_BASE}/reportes/verificaciones-excel?startDate=${start}&endDate=${end}`, {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al descargar el Excel.');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reporte-verificaciones-${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        Swal.close();
+
+    } catch (error) {
+        console.error('Error descarga Excel:', error);
+        Swal.fire('Error', error.message, 'error');
+    }
+}
+
 async function purgarSistema() {
     const { value: password } = await Swal.fire({
-        title: '⚠️ ACCIÓN CRÍTICA',
+        title: 'âš ï¸ ACCIÓN CRÍTICA',
         html: `
             <div style="text-align: left; background: #fff8f8; padding: 15px; border-radius: 10px; border: 1px solid #ffccba; font-size: 14px; line-height: 1.5;">
                 <p style="margin-bottom: 10px; color: #dc3545; font-weight: 700;">Esta acción ELIMINARÁ TODAS LAS GUÍAS, PAGOS Y RASTREOS del sistema de forma permanente.</p>
@@ -4500,4 +4936,439 @@ async function purgarSistema() {
     } finally {
         showLoading(false);
     }
+}
+
+// ===== GESTIÓN DE MINERALES =====
+async function renderMinerales(container) {
+    showLoading(true);
+
+    try {
+        const response = await apiRequest('/minerales/todos');
+        const minerales = response.minerales;
+
+        container.innerHTML = `
+            <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <div>
+                    <h1 class="dashboard-title">Gestión de Minerales</h1>
+                    <p class="dashboard-subtitle">Administre los tipos de minerales disponibles en el sistema</p>
+                </div>
+                <button class="btn btn-primary" onclick="mostrarModalNuevoMineral()">
+                    + Nuevo Mineral
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Mineral</th>
+                                <th>Estado</th>
+                                <th>Fecha Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="minerales-table-body">
+                            ${minerales.length === 0 ? '<tr><td colspan="4" style="text-align: center;">No hay minerales registrados</td></tr>' : 
+                                minerales.map(m => `
+                                <tr>
+                                    <td data-label="Nombre">${m.nombre}</td>
+                                    <td data-label="Estado">
+                                        <span class="badge ${m.activo ? 'badge-success' : 'badge-danger'}">
+                                            ${m.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </td>
+                                    <td data-label="Registro">${new Date(m.created_at).toLocaleDateString()}</td>
+                                    <td data-label="Acciones">
+                                        <div style="display: flex; gap: 10px;">
+                                            <button class="btn btn-sm ${m.activo ? 'btn-outline' : 'btn-success'}" 
+                                                onclick="toggleMineralStatus('${m.id}', ${m.activo})">
+                                                ${m.activo ? 'Desactivar' : 'Activar'}
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="eliminarMineral('${m.id}', '${m.nombre}')">
+                                                Borrar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error al cargar minerales:', error);
+        container.innerHTML = '<div class="error-message">Error al cargar la lista de minerales</div>';
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function mostrarModalNuevoMineral() {
+    const { value: nombre } = await Swal.fire({
+        title: 'Agregar Nuevo Mineral',
+        input: 'text',
+        inputLabel: 'Nombre del Mineral',
+        inputPlaceholder: 'Ej: Arena de Rio, Granito...',
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'El nombre es requerido';
+            }
+        }
+    });
+
+    if (nombre) {
+        showLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/minerales`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ nombre })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire('Guardado', 'El mineral ha sido registrado correctamente', 'success');
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(data.error || 'Error al guardar');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+async function toggleMineralStatus(id, currentStatus) {
+    const result = await Swal.fire({
+        title: '¿Cambiar estado?',
+        text: `¿Está seguro de ${currentStatus ? 'desactivar' : 'activar'} este mineral?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cambiar',
+        cancelButtonText: 'No, cancelar'
+    });
+
+    if (result.isConfirmed) {
+        showLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/minerales/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ activo: !currentStatus })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(data.error || 'Error al actualizar');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+async function eliminarMineral(id, nombre) {
+    const result = await Swal.fire({
+        title: '¿Eliminar mineral?',
+        text: `Está a punto de eliminar permanentemente el mineral "${nombre}". Esta acción no se puede deshacer.`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545'
+    });
+
+    if (result.isConfirmed) {
+        showLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/minerales/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire('Eliminado', 'El mineral ha sido borrado', 'success');
+                renderMinerales(document.getElementById('dashboard-content'));
+            } else {
+                throw new Error(data.error || 'Error al eliminar');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+// =====================================================================
+//   MÓDULO DE DIRECTORIOS
+//   Permite a las canteras guardar Clientes, Choferes y Vehículos
+// =====================================================================
+
+let dirTab = 'clientes';
+
+async function renderDirectorios(container) {
+    container.innerHTML = `
+        <div style="padding:30px;max-width:1100px;margin:0 auto;">
+            <div style="display:flex;align-items:center;gap:15px;margin-bottom:30px;">
+                <div style="width:48px;height:48px;background:linear-gradient(135deg,#1a5f7a,#2980b9);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div>
+                    <h2 style="margin:0;font-size:26px;font-weight:800;color:#1a1a1a;">Directorios</h2>
+                    <p style="margin:0;color:#666;font-size:14px;">Gestiona tus clientes, choferes y vehículos frecuentes</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:24px;background:#f0f4f8;border-radius:12px;padding:6px;">
+                <button id="dir-tab-clientes" onclick="cambiarDirTab('clientes')" style="flex:1;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#1a5f7a;box-shadow:0 2px 8px rgba(0,0,0,0.1);">📋 Clientes</button>
+                <button id="dir-tab-choferes" onclick="cambiarDirTab('choferes')" style="flex:1;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;background:transparent;color:#666;">🧑 Choferes</button>
+                <button id="dir-tab-vehiculos" onclick="cambiarDirTab('vehiculos')" style="flex:1;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;background:transparent;color:#666;">🚛 Vehículos</button>
+            </div>
+            <div id="dir-tab-content" style="min-height:400px;">
+                <div style="text-align:center;padding:60px;color:#999;">Cargando...</div>
+            </div>
+        </div>
+    `;
+    dirTab = 'clientes';
+    await cargarDirTab('clientes');
+}
+
+function cambiarDirTab(tab) {
+    dirTab = tab;
+    ['clientes','choferes','vehiculos'].forEach(t => {
+        const btn = document.getElementById('dir-tab-' + t);
+        if (!btn) return;
+        if (t === tab) {
+            btn.style.background = 'white';
+            btn.style.color = '#1a5f7a';
+            btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        } else {
+            btn.style.background = 'transparent';
+            btn.style.color = '#666';
+            btn.style.boxShadow = 'none';
+        }
+    });
+    cargarDirTab(tab);
+}
+
+async function cargarDirTab(tab) {
+    const tabContent = document.getElementById('dir-tab-content');
+    if (!tabContent) return;
+    tabContent.innerHTML = '<div style="text-align:center;padding:60px;color:#999;">Cargando...</div>';
+    try {
+        const res = await apiRequest('/directorios/' + tab);
+        const items = res[tab] || [];
+        renderDirTabContent(tab, items, tabContent);
+    } catch (err) {
+        tabContent.innerHTML = '<div style="text-align:center;padding:40px;color:#dc3545;">Error al cargar: ' + err.message + '</div>';
+    }
+}
+
+function renderDirTabContent(tab, items, container) {
+    const icons = { clientes:'📋', choferes:'🧑', vehiculos:'🚛' };
+    const singulars = { clientes:'Cliente', choferes:'Chofer', vehiculos:'Vehículo' };
+    const icon = icons[tab];
+
+    let tableHtml = '';
+    if (items.length === 0) {
+        tableHtml = '<div style="text-align:center;padding:60px;color:#999;"><div style="font-size:48px;margin-bottom:12px;">' + icon + '</div><p>No hay ' + tab + ' guardados aún.</p></div>';
+    } else {
+        let rows = '';
+        let headCols = '';
+        if (tab === 'clientes') {
+            headCols = '<th>Nombre / Razón Social</th><th>RIF / Cédula</th><th>Dirección</th><th>Acciones</th>';
+            rows = items.map(function(c) {
+                return '<tr><td style="font-weight:600;">' + c.nombre + '</td><td>' + c.rif + '</td><td style="color:#666;font-size:13px;">' + (c.direccion||'-') + '</td><td><button onclick="eliminarDirItem(\'clientes\',\'' + c.id + '\',\'' + c.nombre.replace(/'/g,"\\\'") + '\')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;">Eliminar</button></td></tr>';
+            }).join('');
+        } else if (tab === 'choferes') {
+            headCols = '<th>Nombre</th><th>Cédula</th><th>Teléfono</th><th>Acciones</th>';
+            rows = items.map(function(c) {
+                return '<tr><td style="font-weight:600;">' + c.nombre + '</td><td>' + c.cedula + '</td><td>' + (c.telefono||'-') + '</td><td><button onclick="eliminarDirItem(\'choferes\',\'' + c.id + '\',\'' + c.nombre.replace(/'/g,"\\\'") + '\')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;">Eliminar</button></td></tr>';
+            }).join('');
+        } else {
+            headCols = '<th>Marca / Modelo</th><th>Placa</th><th>Color</th><th>Carrocería</th><th>Acciones</th>';
+            rows = items.map(function(v) {
+                return '<tr><td style="font-weight:600;">' + v.marca + ' ' + v.modelo + '</td><td>' + v.placa + '</td><td>' + (v.color||'-') + '</td><td>' + (v.carroceria||'-') + '</td><td><button onclick="eliminarDirItem(\'vehiculos\',\'' + v.id + '\',\'' + v.placa + '\')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;">Eliminar</button></td></tr>';
+            }).join('');
+        }
+        const thStyle = 'padding:14px 16px;text-align:left;color:white;font-size:13px;font-weight:700;';
+        const heads = headCols.replace(/<th>/g,'<th style="'+thStyle+'">');
+        tableHtml = '<div style="overflow-x:auto;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.07);border:1px solid #e8ecf0;"><table style="width:100%;border-collapse:collapse;background:white;"><thead><tr style="background:linear-gradient(135deg,#1a5f7a,#2980b9);">' + heads + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
+
+    container.innerHTML = tableHtml + '<div style="margin-top:20px;text-align:right;"><button onclick="abrirFormNuevoDirItem(\'' + tab + '\')" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a5f7a,#2980b9);color:white;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(26,95,122,0.35);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Agregar ' + singulars[tab] + '</button></div>';
+
+    container.querySelectorAll('tbody tr').forEach(function(tr, i) {
+        tr.style.borderBottom = '1px solid #f0f4f8';
+        tr.style.background = i % 2 === 0 ? '#fff' : '#f9fbfc';
+        tr.querySelectorAll('td').forEach(function(td) { td.style.padding = '12px 16px'; td.style.fontSize = '14px'; });
+    });
+}
+
+function abrirFormNuevoDirItem(tab) {
+    const singulars = { clientes:'Cliente', choferes:'Chofer', vehiculos:'Vehículo' };
+    let formFields = '';
+    if (tab === 'clientes') {
+        formFields = '<div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Razón Social / Nombre *</label><input type="text" id="dir-new-nombre" class="form-control" placeholder="Nombre o razón social"></div><div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">RIF / Cédula *</label><input type="text" id="dir-new-rif" class="form-control" placeholder="Ej: J-12345678-9"></div><div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Dirección Fiscal</label><input type="text" id="dir-new-direccion" class="form-control" placeholder="Opcional"></div>';
+    } else if (tab === 'choferes') {
+        formFields = '<div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Nombre Completo *</label><input type="text" id="dir-new-nombre" class="form-control" placeholder="Nombres y apellidos"></div><div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Cédula de Identidad *</label><input type="text" id="dir-new-cedula" class="form-control" placeholder="Ej: V-12345678"></div><div class="form-group" style="margin-bottom:14px;text-align:left;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Teléfono</label><input type="text" id="dir-new-telefono" class="form-control" placeholder="Opcional"></div>';
+    } else {
+        formFields = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;"><div class="form-group" style="margin-bottom:14px;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Marca *</label><input type="text" id="dir-new-marca" class="form-control" placeholder="Ej: Ford"></div><div class="form-group" style="margin-bottom:14px;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Modelo *</label><input type="text" id="dir-new-modelo" class="form-control" placeholder="Ej: F-350"></div><div class="form-group" style="margin-bottom:14px;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Placa *</label><input type="text" id="dir-new-placa" class="form-control" placeholder="Ej: ABC123D" style="text-transform:uppercase;"></div><div class="form-group" style="margin-bottom:14px;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Color</label><input type="text" id="dir-new-color" class="form-control" placeholder="Ej: Blanco"></div><div class="form-group" style="margin-bottom:14px;grid-column:1/-1;"><label style="font-size:13px;font-weight:700;margin-bottom:5px;display:block;">Tipo de Carrocería</label><select id="dir-new-carroceria" class="form-control"><option value="">Seleccione...</option><option value="Volteo">Volteo</option><option value="Plataforma">Plataforma</option><option value="Cava">Cava</option><option value="Cisterna">Cisterna</option><option value="Otro">Otro</option></select></div></div>';
+    }
+
+    Swal.fire({
+        title: 'Agregar ' + singulars[tab],
+        html: formFields,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#1a5f7a',
+        preConfirm: function() {
+            if (tab === 'clientes') {
+                var nombre = document.getElementById('dir-new-nombre').value.trim();
+                var rif = document.getElementById('dir-new-rif').value.trim();
+                if (!nombre || !rif) { Swal.showValidationMessage('Nombre y RIF son obligatorios'); return false; }
+                return { nombre: nombre, rif: rif, direccion: document.getElementById('dir-new-direccion').value.trim() };
+            } else if (tab === 'choferes') {
+                var nombre = document.getElementById('dir-new-nombre').value.trim();
+                var cedula = document.getElementById('dir-new-cedula').value.trim();
+                if (!nombre || !cedula) { Swal.showValidationMessage('Nombre y Cédula son obligatorios'); return false; }
+                return { nombre: nombre, cedula: cedula, telefono: document.getElementById('dir-new-telefono').value.trim() };
+            } else {
+                var marca = document.getElementById('dir-new-marca').value.trim();
+                var modelo = document.getElementById('dir-new-modelo').value.trim();
+                var placa = document.getElementById('dir-new-placa').value.trim().toUpperCase();
+                if (!marca || !modelo || !placa) { Swal.showValidationMessage('Marca, Modelo y Placa son obligatorios'); return false; }
+                return { marca: marca, modelo: modelo, placa: placa, color: document.getElementById('dir-new-color').value.trim(), carroceria: document.getElementById('dir-new-carroceria').value };
+            }
+        }
+    }).then(async function(result) {
+        if (!result.isConfirmed) return;
+        try {
+            showLoading(true);
+            await apiRequest('/directorios/' + tab, 'POST', result.value);
+            Swal.fire({ icon: 'success', title: 'Guardado', text: singulars[tab] + ' agregado al directorio.', confirmButtonColor: '#1a5f7a' });
+            await cargarDirTab(tab);
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    });
+}
+
+async function eliminarDirItem(tab, id, nombre) {
+    const labels = { clientes:'cliente', choferes:'chofer', vehiculos:'vehículo' };
+    const result = await Swal.fire({
+        title: '¿Eliminar ' + labels[tab] + '?',
+        html: 'Se eliminará <strong>' + nombre + '</strong> del directorio.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545'
+    });
+    if (!result.isConfirmed) return;
+    try {
+        showLoading(true);
+        await apiRequest('/directorios/' + tab + '/' + id, 'DELETE');
+        Swal.fire({ icon: 'success', title: 'Eliminado', text: nombre + ' fue eliminado.', confirmButtonColor: '#1a5f7a', timer: 2000, showConfirmButton: false });
+        await cargarDirTab(tab);
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function abrirSelectorDirectorio(tab) {
+    const labels = { clientes:'Cliente', choferes:'Chofer', vehiculos:'Vehículo' };
+    try {
+        showLoading(true);
+        const res = await apiRequest('/directorios/' + tab);
+        const items = res[tab] || [];
+        showLoading(false);
+        if (items.length === 0) {
+            Swal.fire({ icon:'info', title:'Sin ' + tab + ' en el directorio', html:'No tienes ' + tab + ' guardados aún.<br>Puedes agregarlos desde el módulo <strong>Directorios</strong> en el menú.', confirmButtonColor:'#1a5f7a' });
+            return;
+        }
+        let options = '';
+        if (tab === 'clientes') {
+            options = items.map(function(c) { return '<option value="' + c.id + '">' + c.nombre + ' — ' + c.rif + '</option>'; }).join('');
+        } else if (tab === 'choferes') {
+            options = items.map(function(c) { return '<option value="' + c.id + '">' + c.nombre + ' — ' + c.cedula + '</option>'; }).join('');
+        } else {
+            options = items.map(function(v) { return '<option value="' + v.id + '">' + v.marca + ' ' + v.modelo + ' — ' + v.placa + '</option>'; }).join('');
+        }
+        const result = await Swal.fire({
+            title: 'Seleccionar ' + labels[tab],
+            html: '<select id="dir-selector-select" class="form-control" style="width:100%;padding:10px;border-radius:8px;font-size:14px;border:1px solid #ddd;margin-top:10px;">' + options + '</select>',
+            showCancelButton: true,
+            confirmButtonText: 'Seleccionar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1a5f7a',
+            preConfirm: function() {
+                var sel = document.getElementById('dir-selector-select');
+                return sel ? sel.value : null;
+            }
+        });
+        if (!result.isConfirmed || !result.value) return;
+        var selectedId = result.value;
+        if (tab === 'clientes') {
+            var item = items.find(function(c) { return c.id === selectedId; });
+            if (!item) return;
+            setFormField('campo-cliente_nombre', item.nombre);
+            setFormField('campo-cliente_rif', item.rif);
+            setFormField('campo-cliente_direccion', item.direccion || '');
+        } else if (tab === 'choferes') {
+            var item = items.find(function(c) { return c.id === selectedId; });
+            if (!item) return;
+            setFormField('campo-conductor_nombre', item.nombre);
+            setFormField('campo-conductor_cedula', item.cedula);
+        } else {
+            var item = items.find(function(v) { return v.id === selectedId; });
+            if (!item) return;
+            setFormField('campo-vehiculo_marca', item.marca);
+            setFormField('campo-vehiculo_modelo', item.modelo);
+            setFormField('campo-vehiculo_placa', item.placa);
+            setFormField('campo-vehiculo_color', item.color || '');
+            setSelectField('campo-vehiculo_carroceria', item.carroceria || '');
+        }
+    } catch (err) {
+        showLoading(false);
+        Swal.fire('Error', err.message, 'error');
+    }
+}
+
+function setFormField(id, value) {
+    var el = document.getElementById(id);
+    if (el) { el.value = value; el.dispatchEvent(new Event('input')); }
+}
+
+function setSelectField(id, value) {
+    var el = document.getElementById(id);
+    if (el) { el.value = value; el.dispatchEvent(new Event('change')); }
 }

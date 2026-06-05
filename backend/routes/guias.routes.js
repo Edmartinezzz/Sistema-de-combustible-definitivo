@@ -31,7 +31,10 @@ router.post('/solicitar', authenticateToken, requireRole(['empresa', 'contribuye
             cliente_nombre,
             cliente_rif,
             cliente_direccion,
-            observaciones
+            observaciones,
+            guardar_cliente_dir,
+            guardar_conductor_dir,
+            guardar_vehiculo_dir
         } = req.body;
         
         // Obtener tasa actual y configuración de pagos
@@ -146,6 +149,44 @@ router.post('/solicitar', authenticateToken, requireRole(['empresa', 'contribuye
             JSON.stringify({ numero_guia: guia.numero_guia, materiales_count: materiales.length, monto_pagar: monto_total_pagar_bs }), truncateIP(req.ip)]
         );
 
+        // Inserción automática en los directorios si se solicita
+        if (guardar_cliente_dir === true || guardar_cliente_dir === 'true') {
+            await client.query(
+                `INSERT INTO cantera_clientes (empresa_id, rif, nombre, direccion)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (empresa_id, rif) 
+                 DO UPDATE SET nombre = EXCLUDED.nombre, direccion = EXCLUDED.direccion`,
+                [req.user.empresaId, sanitizeInput(cliente_rif).trim().toUpperCase(), sanitizeInput(cliente_nombre).trim(), sanitizeInput(cliente_direccion).trim()]
+            );
+        }
+
+        if (guardar_conductor_dir === true || guardar_conductor_dir === 'true') {
+            await client.query(
+                `INSERT INTO cantera_choferes (empresa_id, cedula, nombre)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (empresa_id, cedula) 
+                 DO UPDATE SET nombre = EXCLUDED.nombre`,
+                [req.user.empresaId, sanitizeInput(conductor_cedula).trim().toUpperCase(), sanitizeInput(conductor_nombre).trim()]
+            );
+        }
+
+        if (guardar_vehiculo_dir === true || guardar_vehiculo_dir === 'true') {
+            await client.query(
+                `INSERT INTO cantera_vehiculos (empresa_id, placa, marca, modelo, color, carroceria)
+                 VALUES ($1, $2, $3, $4, $5, $6)
+                 ON CONFLICT (empresa_id, placa) 
+                 DO UPDATE SET marca = EXCLUDED.marca, modelo = EXCLUDED.modelo, color = EXCLUDED.color, carroceria = EXCLUDED.carroceria`,
+                [
+                    req.user.empresaId, 
+                    sanitizeInput(vehiculo_placa).trim().toUpperCase(), 
+                    sanitizeInput(vehiculo_marca).trim(), 
+                    sanitizeInput(vehiculo_modelo).trim(), 
+                    sanitizeInput(vehiculo_color).trim(), 
+                    sanitizeInput(vehiculo_carroceria).trim()
+                ]
+            );
+        }
+
         await client.query('COMMIT');
 
         // Cargar datos frescos de la empresa para la generación del PDF (Evita tokens antiguos que no tengan codigo_letra)
@@ -239,8 +280,9 @@ router.post('/solicitar', authenticateToken, requireRole(['empresa', 'contribuye
  * POST /api/guias/previsualizar
  * Permite previsualizar el PDF de la guía antes de confirmar su solicitud e inserción
  */
-router.post('/previsualizar', authenticateToken, requireRole(['empresa', 'contribuyente']), async (req, res) => {
+router.post('/previsualizar', authenticateToken, requireRole(['empresa', 'contribuyente', 'master']), async (req, res) => {
     try {
+        console.log('--- INICIO PREVISUALIZACIÓN ---');
         const {
             materiales, origen, destino, vehiculo_placa, vehiculo_marca, vehiculo_modelo,
             vehiculo_color, vehiculo_carroceria, conductor_nombre, conductor_cedula,
@@ -257,8 +299,10 @@ router.post('/previsualizar', authenticateToken, requireRole(['empresa', 'contri
 
         if (!materiales || !Array.isArray(materiales) || materiales.length === 0 ||
             !origen || !destino || !vehiculo_placa || !conductor_nombre || !conductor_cedula) {
-            return res.status(400).json({ error: 'Datos incompletos para previsualización.' });
+            console.error('Datos incompletos para preview:', { materiales: !!materiales, origen, destino, vehiculo_placa });
+            return res.status(400).json({ error: 'Datos incompletos para previsualización (Origen, Destino, Placa y Conductor son obligatorios).' });
         }
+
 
         let total_venta_usd = 0;
         materiales.forEach(m => {
@@ -342,7 +386,7 @@ router.post('/previsualizar', authenticateToken, requireRole(['empresa', 'contri
  */
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { estado, desde, hasta, limit = 100 } = req.query;
+        const { estado, desde, hasta, empresa_id, limit = 500 } = req.query;
 
         let query = `
             SELECT g.*, e.razon_social as empresa_nombre, e.rif as empresa_rif, e.codigo_letra
@@ -357,6 +401,11 @@ router.get('/', authenticateToken, async (req, res) => {
         if (req.user.role !== 'master') {
             query += ` AND g.empresa_id = $${paramCount}`;
             params.push(req.user.empresaId);
+            paramCount++;
+        } else if (empresa_id) {
+            // Si es master y se proporcionó empresa_id, filtrar por ella
+            query += ` AND g.empresa_id = $${paramCount}`;
+            params.push(empresa_id);
             paramCount++;
         }
 
@@ -375,7 +424,7 @@ router.get('/', authenticateToken, async (req, res) => {
         }
 
         if (hasta) {
-            query += ` AND g.created_at <= $${paramCount}`;
+            query += ` AND g.created_at <= $${paramCount}::timestamp + interval '1 day' - interval '1 second'`;
             params.push(hasta);
             paramCount++;
         }
@@ -734,12 +783,45 @@ router.get('/:id/pdf', authenticateToken, async (req, res) => {
 
         const guia = result.rows[0];
 
-        // Ventana de acceso 8 AM - 6 PM
+        // Ventana de acceso 8 AM - 6 PM en hora de Venezuela (America/Caracas)
         const now = new Date();
-        const hour = now.getHours();
+        let hour = now.getHours();
+        let isToday = false;
+
+        try {
+            // Obtener la hora local de Caracas (0-23)
+            const hourFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Caracas',
+                hour: 'numeric',
+                hour12: false
+            });
+            hour = parseInt(hourFormatter.format(now), 10);
+
+            // Obtener fechas localizadas en "America/Caracas"
+            const dateFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Caracas',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            const nowParts = dateFormatter.formatToParts(now);
+            const nowCaracasString = `${nowParts.find(p => p.type === 'year').value}-${nowParts.find(p => p.type === 'month').value}-${nowParts.find(p => p.type === 'day').value}`;
+
+            const createdDate = new Date(guia.created_at);
+            const createdParts = dateFormatter.formatToParts(createdDate);
+            const createdCaracasString = `${createdParts.find(p => p.type === 'year').value}-${createdParts.find(p => p.type === 'month').value}-${createdParts.find(p => p.type === 'day').value}`;
+
+            isToday = nowCaracasString === createdCaracasString;
+        } catch (tzError) {
+            console.error('Error calculando timezone en guias.routes.js:', tzError);
+            // Fallback en caso de error
+            hour = now.getHours();
+            const createdDate = new Date(guia.created_at);
+            isToday = createdDate.toDateString() === now.toDateString();
+        }
+
         const isWithinWindow = hour >= 8 && hour < 18;
-        const createdDate = new Date(guia.created_at);
-        const isToday = createdDate.toDateString() === now.toDateString();
 
         if (guia.estado !== 'activa' && guia.estado !== 'usada' && guia.estado !== 'vencida') {
             if (!(isToday && isWithinWindow)) {
